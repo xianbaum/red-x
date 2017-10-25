@@ -1,0 +1,13 @@
+{
+    "compilerOptions":{
+        "module": "system",
+        "outFile": "out/redditx.js",
+        "target": "es2017",
+        "noImplicitAny": true,
+        "noImplicitReturns": true,
+        "noImplicitThis": true
+        },
+    "include": [
+        "src/*"
+    ]
+}
