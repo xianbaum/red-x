@@ -1,4 +1,5 @@
 import { DesktopThreadRedditComment }  from "./DesktopThreadRedditComment";
+import { RedditComment } from "./RedditComment";
 
 class DesktopThreadServices {
     static processRedditThread() {

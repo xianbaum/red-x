@@ -5,7 +5,11 @@
         "target": "es2017",
         "noImplicitAny": true,
         "noImplicitReturns": true,
-        "noImplicitThis": true
+        "noImplicitThis": true,
+        "strict": true,
+        "strictNullChecks": true,
+        "alwaysStrict": true,
+        "removeComments": false
         },
     "include": [
         "src/*"

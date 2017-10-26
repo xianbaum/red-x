@@ -12,7 +12,10 @@ export class DesktopThreadRedditComment implements RedditComment {
     get posterName() {
         return this.element.getAttribute("data-author");
     }
-    get user() {
-        
+    get id() {
+        return 1;
     }
+    // get user() {
+        
+    // }
 }

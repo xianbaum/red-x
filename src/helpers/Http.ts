@@ -41,7 +41,7 @@ export class Http {
             xhr.open("GET", url, false);
             xhr.onload = () => resolve(xhr.responseText);
             xhr.onerror = () => reject(xhr.statusText);
-             xhr.send();
+            xhr.send();
         });
     }
     static createQueryString(data: any): string {
