@@ -1,15 +1,14 @@
 {
     "compilerOptions":{
-        "module": "system",
-        "outFile": "out/redditx.js",
+        "module": "commonjs",
+        "outDir": "tsout/",
         "target": "es2017",
         "noImplicitAny": true,
         "noImplicitReturns": true,
         "noImplicitThis": true,
-        "strict": true,
         "strictNullChecks": true,
-        "alwaysStrict": true,
-        "removeComments": false
+        "removeComments": false,
+        "noImplicitUseStrict": true
         },
     "include": [
         "src/*"

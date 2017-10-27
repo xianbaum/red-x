@@ -1,0 +1,16 @@
+{
+    "manifest_version": 2,
+    "name": "redditx",
+    "version": "0.0.1",
+    "description": "An unofficial browser add-on for using Reddit",
+    "browser_action": {
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "https://*.pinterest.com/*"
+            ],
+            "js": ["bundle.js"]
+        }
+    ]
+}

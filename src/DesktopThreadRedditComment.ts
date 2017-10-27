@@ -1,4 +1,4 @@
-import {RedditComment} from "RedditComment"
+import {RedditComment} from "./RedditComment"
 
 export class DesktopThreadRedditComment implements RedditComment {
     private element: HTMLElement;

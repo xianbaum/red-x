@@ -1,4 +1,4 @@
-import {RedditComment} from "RedditComment"
+import {RedditComment} from "./RedditComment"
 
 export interface RedditUser {
     readonly comments: RedditComment[];

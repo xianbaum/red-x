@@ -5,8 +5,8 @@ export class ModalElement {
     constructor(header?: string, message?: string,
         showX?: boolean, timeoutInMsecs?: number,
         buttons?: (HTMLButtonElement|string)[]) {
-        this.initStyle();
         this.element = document.createElement("div");
+        this.initStyle();        
         if(header !== undefined) {
             let heading = document.createElement("h3");
             heading.innerHTML = header;
