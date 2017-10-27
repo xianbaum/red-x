@@ -6,11 +6,11 @@ export class Modal {
         return new ModalElement(message, undefined, undefined, undefined, 
             ["OK"]);
     }
-    static createYesNo(message: string, yesCallback: () => void) {
-        return new ModalElement(undefined, message, undefined, undefined, 
+    static createYesNo(message: string, yesCallback: () => void): ModalElement {
+        return new ModalElement(message, undefined, undefined, undefined, 
         [Elements.createButton("Yes", yesCallback), "No"]);
     }
-    static createToast(message: string) {
+    static createToast(message: string): ModalElement {
         return new ModalElement(message, undefined, undefined, 5000);
     }
 }

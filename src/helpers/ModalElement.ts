@@ -3,7 +3,7 @@ import { NotImplementedException } from "./NotImplementedException";
 export class ModalElement {
     private static modalCount: number;
     constructor(header?: string, message?: string,
-        showX?: boolean, timeoutInMsecs?: number,
+        hideX?: boolean, timeoutInMsecs?: number,
         buttons?: (HTMLButtonElement|string)[]) {
         this.element = document.createElement("div");
         this.initStyle();        
@@ -13,17 +13,21 @@ export class ModalElement {
             heading.style.marginLeft = heading.style.marginRight = "auto";
             this.element.appendChild(heading);
         }
-        if(showX) {
+        if(!hideX) {
             let xElement = document.createElement("button");
             xElement.style.backgroundColor = "inherit";
             xElement.style.borderWidth = "0";
             xElement.style.cssFloat = "right";
-            xElement.style.width = "100%";
+            xElement.style.zIndex = "100";
             xElement.innerHTML = "\uD83D\uDDD9"; /* X symbol */
+            xElement.addEventListener("click", () => {
+                this.close();
+            });
             this.element.appendChild(xElement);
         }
         if(message !== undefined) {
             let messageElement = document.createElement("p");
+            this.element.innerHTML = message;
             this.element.appendChild(messageElement);
         }
         if(buttons != undefined) {
@@ -47,43 +51,49 @@ export class ModalElement {
             }
         }
         if(timeoutInMsecs !== undefined && timeoutInMsecs > 0) {
-            setTimeout(timeoutInMsecs, () => {
+            setTimeout(() => {
                 this.close();
-            });
+            }, timeoutInMsecs);
         }
     }
     private element: HTMLDivElement;
     private initStyle() {
         this.element.style.width = "75%";
-        this.element.style.height = "25%";
+        this.element.style.height = "100px";
         this.element.style.backgroundColor = "white";
         this.element.style.borderStyle = "solid";
         this.element.style.borderWidth = "1px";
         this.element.style.borderColor = "blue";
+        this.element.style.position = "fixed";
+        this.element.style.top = "100px";
+        this.element.style.marginLeft = this.element.style.marginRight = "auto";        
     }
-    open() {
+    open(): ModalElement {
         if(ModalElement.modalCount > 0) {
             throw new NotImplementedException("Find out how to support more than 1 modal dummy");
         }
         ModalElement.modalCount++;
         if(!this.isOpened){
-            document.appendChild(this.element);      
+            document.body.appendChild(this.element);      
         }
+        return this;
     }
-    close() {
+    close(): ModalElement {
         ModalElement.modalCount--;
         if(this.isOpened) {
-            document.removeChild(this.element);            
+            document.body.removeChild(this.element);            
         }
+        return this;
     }
-    toggle() {
+    toggle(): ModalElement {
         if(this.isOpened) {
             this.close();
         } else {
             this.open();
         }
+        return this;
     }
     public get isOpened() {
-        return document.contains(this.element);
+        return document.body.contains(this.element);
     }
 }

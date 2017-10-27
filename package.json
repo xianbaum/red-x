@@ -2,12 +2,17 @@
   "name": "redditx",
   "version": "0.0.1",
   "description": "A reddit browser script",
-  "dependencies": {},
+  "dependencies": {
+    "browserify": "^14.5.0",
+    "cpx": "^1.5.0"
+  },
   "devDependencies": {},
   "scripts": {
     "userscript": "npm run tsc && npm run browserify-userscript",
+    "webextension": "npm run tsc && npm run browserify-webextension",
     "tsc": "tsc",
-    "browserify-userscript": "browserify -p [ browserify-userscript-header --file userscript.meta.js ] tsout/main.js > bundle.js"
+    "browserify-webextension": "browserify tsout/main.js > webextension/browserbundle.js",
+    "browserify-userscript": "browserify -p [ browserify-userscript-header --file userscript.meta.js ] tsout/main.js > redditx.js"
   },
   "repository": {
     "type": "git",

@@ -1,3 +1,4 @@
 node_modules/
 tsout/
 bundle.js
+webextension/browserbundle.js
