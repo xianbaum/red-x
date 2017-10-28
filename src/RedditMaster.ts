@@ -1,6 +1,6 @@
 import { RedditApi } from "./RedditApi";
 import { Modal } from "./helpers/Modal"; 
-import { SettingsManager } from "./SettingsManager";
+import { StorageManager } from "./StorageManager";
 import { Url } from "./helpers/Url";
 export class RedditMaster {
     private static requestAccess() {
@@ -10,21 +10,31 @@ export class RedditMaster {
     }
     static verifyCode(): Promise<void> {
         return new Promise<any>( (resolve, reject) => {
-            let settings = SettingsManager.getSettings();
-            if(settings.accessToken == null) {
+            let ua = StorageManager.getUserAccess();
+            if(ua.accessToken == null) {
                 let code = Url.Current.query("code");
                 if(code === undefined) {
-                    RedditMaster.requestAccess();
-                    reject();
+                    // RedditApi.getIdentity().then(
+                    //     () => {
+                    //         settings.hasAcccess = true;
+                    //         SettingsManager.saveSettings(settings);
+                    //         resolve();
+                    //     },
+                    //     () => {
+                            RedditMaster.requestAccess();
+                            reject();
+                        // });
                 } else {
                     RedditApi.getAccessToken(code).then((result) => {
-                        settings.accessToken = result.access_token
-                        SettingsManager.saveSettings(settings);
+                        ua.accessToken = result.access_token
+                        StorageManager.saveUserAccess(ua);
                         resolve();
                     }, (reason) => {
                         Modal.createToast("Bad error happened: "+reason).open();
                     });
                 }
+            } else {
+                resolve();
             }
         })
     } 

@@ -1,4 +1,6 @@
 import { RedditMaster } from "./RedditMaster";
-RedditMaster.verifyCode().then( () => {
+import { RedditApi } from "./RedditApi";
 
+RedditMaster.verifyCode().then( () => {
+    RedditApi.Account.getIdentity();
 });

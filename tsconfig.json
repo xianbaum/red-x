@@ -8,7 +8,7 @@
         "noImplicitThis": true,
         "strictNullChecks": true,
         "removeComments": false,
-        "noImplicitUseStrict": true
+        "alwaysStrict": true
         },
     "include": [
         "src/*"

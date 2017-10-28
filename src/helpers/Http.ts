@@ -18,7 +18,7 @@ export class Http {
         }
         return null;
     }
-    static post(url:string, data?: any, headers?: RequestHeader[], contentType?: string): Promise<any> {
+    static request(method: string, url:string, data?: any, headers?: RequestHeader[], contentType?: string): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             let dataToSend: string|null;
             try {
@@ -27,14 +27,18 @@ export class Http {
                return  reject(error.name);
             }
             const xhr = new XMLHttpRequest();
-            xhr.open("POST", url, false);
+            xhr.open(method, url, false);
             xhr.onload = () => {
                 try{
                     let result = JSON.parse(xhr.responseText);
                     return resolve(result);
                 } catch{}
                 return resolve(xhr.responseText)
-            };            xhr.onerror = () => reject(xhr.statusText);
+            };
+            xhr.onerror = xhr.ontimeout = xhr.onabort = () => {
+                console.log("Request to "+url+"failed: "+ xhr.statusText);
+                reject(xhr.statusText);
+            };
             if(headers !== undefined) {
                 for(let i = 0; i < headers.length; i++) {
                     xhr.setRequestHeader(headers[i].header, headers[i].value);
@@ -43,32 +47,11 @@ export class Http {
             xhr.send(dataToSend);
         });
     }
-    static get(url:string, data?: any, headers?: RequestHeader[]) {
-        return new Promise<any>((resolve, reject) => {
-            let dataToSend: string|null;
-            try {
-                dataToSend = Http.checkData(data);
-            } catch(error) {
-               return  reject(error.name);
-            }
-            url += dataToSend;
-            const xhr = new XMLHttpRequest();            
-            xhr.open("GET", url, false);
-            xhr.onload = () => { 
-                try{
-                    let result = JSON.parse(xhr.responseText);
-                    return resolve(result);
-                } catch{}
-                return resolve(xhr.responseText)
-            };
-            xhr.onerror = () => reject(xhr.statusText);
-            if(headers !== undefined) {
-                for(let i = 0; i < headers.length; i++) {
-                    xhr.setRequestHeader(headers[i].header, headers[i].value);
-                }
-            }
-            xhr.send();
-        });
+    static post(url:string, data?: any, headers?: RequestHeader[], contentType?: string): Promise<any> {
+        return Http.request("POST", url, data, headers);
+    }
+    static get(url:string, headers?: RequestHeader[]) {
+        return Http.request("GET", url, undefined, headers);
     }
     static createQueryString(data: any): string {
         var isFirst = true;

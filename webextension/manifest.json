@@ -12,5 +12,11 @@
             ],
             "js": ["browserbundle.js"]
         }
+    ],
+    "permissions": [
+        "https://oauth.reddit.com/",
+        "storage",
+        "webRequest",
+        "notifications"
     ]
 }
