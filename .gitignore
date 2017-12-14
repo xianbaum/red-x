@@ -2,3 +2,5 @@ node_modules/
 tsout/
 bundle.js
 webextension/browserbundle.js
+npm-debug.log
+redditx.js

@@ -13,11 +13,13 @@ export class UserAccess {
 }
 
 export class StorageManager {
+    private static readonly settingsKey = "redditxsettings"    
+    private static readonly userAccessKey = "redditxuseraccess"
     private static _lsSettings?: Settings;
     static getSettings(): Settings {
         if(StorageManager._lsSettings === undefined) {
-            let storage = localStorage.getItem("redditxsettings");
-            if(storage == null) {
+            let storage = localStorage.getItem(StorageManager.settingsKey);
+            if(storage == null || storage === "undefined") {
                 StorageManager._lsSettings = new Settings();
             } else {
                 StorageManager._lsSettings = JSON.parse(storage);
@@ -27,24 +29,24 @@ export class StorageManager {
     }
     static saveSettings(value: Settings) {
         StorageManager._lsSettings = value;
-        localStorage.setItem("redditxsettings",
+        localStorage.setItem(StorageManager.settingsKey,
             JSON.stringify(StorageManager._lsSettings));
     }
     private static _lsUser?: UserAccess;
     static getUserAccess(): UserAccess {
-        if(StorageManager._lsSettings === undefined) {
-            let storage = localStorage.getItem("redditxuseraccess");
-            if(storage == null) {
-                StorageManager._lsSettings = new Settings();
+        if(StorageManager._lsUser === undefined) {
+            let storage = localStorage.getItem(StorageManager.userAccessKey);
+            if(storage == null || storage === "undefined") {
+                StorageManager._lsUser = new UserAccess();
             } else {
-                StorageManager._lsSettings = JSON.parse(storage);
+                StorageManager._lsUser = JSON.parse(storage);
             }
         }
         return <UserAccess>StorageManager._lsUser;
     }
     static saveUserAccess(value: UserAccess) {
         StorageManager._lsUser = value;
-        localStorage.setItem("redditxuseraccess",
-            JSON.stringify(StorageManager._lsSettings));
+        localStorage.setItem(StorageManager.userAccessKey,
+            JSON.stringify(StorageManager._lsUser));
     }
 }

@@ -1,10 +1,10 @@
-export class SubredditKarma {
+export interface SubredditKarma {
     sr: string;
     comment_karma: number;
     link_karma: number;
 }
 
-export class Trophy {
+export interface Trophy {
     icon_70: string;
     name: string;
     url: string | null;
@@ -14,7 +14,7 @@ export class Trophy {
     description: string |  null;
 }
 
-export class RedditDataObject {
-    kind: "KarmaList" | "TrophyList" | "t6";
-    data: (SubredditKarma)[] | RedditDataObject[] | Trophy;
+export interface RedditDataObject<K extends string,D> {
+    kind: K;
+    data: D;
 }

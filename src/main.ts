@@ -1,6 +1,8 @@
 import { RedditMaster } from "./RedditMaster";
-import { RedditApi } from "./RedditApi";
+import { AccountApi } from "./RedditApi";
+import { DesktopEngine } from "./desktopengine/DesktopEngine";
 
 RedditMaster.verifyCode().then( () => {
-    RedditApi.Account.getIdentity();
+    // AccountApi.getIdentity();
+    var x = new DesktopEngine();
 });

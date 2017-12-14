@@ -8,7 +8,8 @@
         "noImplicitThis": true,
         "strictNullChecks": true,
         "removeComments": false,
-        "alwaysStrict": true
+        "alwaysStrict": true,
+        "experimentalDecorators": true
         },
     "include": [
         "src/*"

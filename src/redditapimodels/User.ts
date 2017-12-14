@@ -11,9 +11,12 @@ export interface User {
     has_mod_mail: boolean
     has_subscribed: boolean
     has_verified_email: boolean
+    has_visited_new_profile: boolean
     hide_from_robots: boolean
     id: string
+    icon_img: string
     in_beta: boolean
+    in_redesign_beta: boolean
     inbox_count: number;
     is_employee: boolean
     is_gold: boolean

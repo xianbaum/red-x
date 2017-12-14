@@ -1,12 +1,16 @@
 import {NotImplementedException} from "./NotImplementedException"
 
-export class RequestHeader {
-    constructor(public header: string, public value: string){
-    }
+export interface RequestHeader {
+    header: string;
+    value: string
 }
 
-export class Http {
-    static  checkData(data: any): string|null {
+export class ResponseHeader implements RequestHeader {
+    constructor(public header: string, public value: string){}
+}
+
+export namespace Http {
+    export function checkData(data: any): string|null {
         if(typeof data === "object") {
             return JSON.stringify(data);
         }
@@ -18,7 +22,7 @@ export class Http {
         }
         return null;
     }
-    static request(method: string, url:string, data?: any, headers?: RequestHeader[], contentType?: string): Promise<any> {
+    export function request(method: string, url:string, data?: any, headers?: RequestHeader[], contentType?: string): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             let dataToSend: string|null;
             try {
@@ -47,13 +51,13 @@ export class Http {
             xhr.send(dataToSend);
         });
     }
-    static post(url:string, data?: any, headers?: RequestHeader[], contentType?: string): Promise<any> {
+    export function post(url:string, data?: any, headers?: RequestHeader[], contentType?: string): Promise<any> {
         return Http.request("POST", url, data, headers);
     }
-    static get(url:string, headers?: RequestHeader[]) {
+    export function get(url:string, headers?: RequestHeader[]) {
         return Http.request("GET", url, undefined, headers);
     }
-    static createQueryString(data: any): string {
+    export function createQueryString(data: any): string {
         var isFirst = true;
         var qs = "";
         if(typeof data === "object" && data !== null) {
