@@ -1,5 +1,5 @@
 import { DesktopThreadRedditComment }  from "./DesktopThreadRedditComment";
-import { RedditComment } from "../RedditComment";
+import { RedditComment } from "../interfaces/RedditComment";
 
 export class DesktopThreadServices {
     constructor() {}
