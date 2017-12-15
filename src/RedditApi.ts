@@ -48,7 +48,6 @@ export namespace AccountApi {
         return Helpers.genericListing(Helpers.oauthBase+AccountApi.meBase+"/blocked", list);
     }
 }
-
 export class RedditValiationError extends Error {
     constructor(message: string) {
         super(message);
@@ -118,3 +117,9 @@ export namespace RedditApi {
         ).then(Helpers.returnExceptOnError);
     }
 }
+
+//uncomment for testing api
+declare var cloneInto: any;
+cloneInto( AccountApi, window, {cloneFunctions: true, wrapReflectors: true});
+cloneInto( RedditApi, window, {cloneFunctions: true, wrapReflectors: true});
+cloneInto( Helpers, window, {cloneFunctions: true, wrapReflectors: true});

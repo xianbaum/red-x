@@ -3,7 +3,7 @@ import { RedditComment, RedditCommentTypeId, RedditCommentType } from "../interf
 export class ApiRedditComment implements RedditComment, RedditCommentTypeId {
     body: string;
     posterName: string;
-    id: number;
+    id: string;
     score?: number;
     datePosted: Date;
     edited: boolean;

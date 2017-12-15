@@ -3,7 +3,7 @@ import { RedditComment, RedditCommentTypeId, RedditCommentType, RedditCommentAda
 import { ApiRedditComment } from "../apiengine/ApiRedditComment";
 
 export class AdaptiveRedditComment implements RedditComment, RedditCommentTypeId {
-    id: number;
+    id: string;
     readonly typeId: RedditCommentType = RedditCommentType.Adaptive;
     body: string;
     posterName: string;
