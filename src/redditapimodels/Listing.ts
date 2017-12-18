@@ -1,6 +1,6 @@
-export interface RedditListing {
-    after: string;
-    before: string;
+export interface Listing {
+    after: string | null;
+    before: string | null;
     count: number;
     limit: number;
     show?: string;

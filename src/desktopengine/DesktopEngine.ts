@@ -19,7 +19,7 @@ export class DesktopEngine  {
         if(this.pageIsThread) {
             this.pageType = PageType.Thread;
             this.threadServices = new DesktopThreadServices();
-            this.threadServices.processRedditThread();
+            DesktopThreadServices.processRedditThread();
         }
     }
     private get subredditName() {

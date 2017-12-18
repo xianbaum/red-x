@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         redditx
+// @name         red-x
 // @namespace    http://reddit.net/
 // @match        https://www.reddit.com/*
 // @include      https://www.reddit.com/*

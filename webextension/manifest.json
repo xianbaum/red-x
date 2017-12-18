@@ -1,6 +1,6 @@
 {
     "manifest_version": 2,
-    "name": "redditx",
+    "name": "red-x",
     "version": "0.0.1",
     "description": "An unofficial browser add-on for using Reddit",
     "browser_action": {
@@ -14,7 +14,7 @@
         }
     ],
     "permissions": [
-        "https://oauth.reddit.com/",
+        "https://oauth.reddit.com/*",
         "storage",
         "webRequest",
         "notifications"

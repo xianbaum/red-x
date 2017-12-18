@@ -1,5 +1,6 @@
 export type UserPrefKeys = keyof UserPrefs;
-export interface UserPrefs
+export type UserPrefs = UserPrefsBasic & Account;
+interface UserPrefsBasic
 {
     default_theme_sr: null;
     threaded_messages: boolean

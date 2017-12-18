@@ -13,8 +13,8 @@ export class UserAccess {
 }
 
 export class StorageManager {
-    private static readonly settingsKey = "redditxsettings"    
-    private static readonly userAccessKey = "redditxuseraccess"
+    private static readonly settingsKey = "redxsettings"    
+    private static readonly userAccessKey = "redxuseraccess"
     private static _lsSettings?: Settings;
     static getSettings(): Settings {
         if(StorageManager._lsSettings === undefined) {

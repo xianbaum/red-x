@@ -1,5 +1,5 @@
 {
-  "name": "redditx",
+  "name": "red-x",
   "version": "0.0.1",
   "description": "A reddit browser script",
   "dependencies": {
@@ -12,16 +12,16 @@
     "webextension": "npm run tsc && npm run browserify-webextension",
     "tsc": "tsc",
     "browserify-webextension": "browserify tsout/main.js > webextension/browserbundle.js",
-    "browserify-userscript": "browserify -p [ browserify-userscript-header --file userscript.meta.js ] tsout/main.js > redditx.js"
+    "browserify-userscript": "browserify -p [ browserify-userscript-header --file userscript.meta.js ] tsout/main.js > redx.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/xianbaum/redditx.git"
+    "url": "git+https://github.com/xianbaum/red-x.git"
   },
   "author": "Christian Michael Baum",
   "license": "GPL-3.0",
   "bugs": {
-    "url": "https://github.com/xianbaum/redditx/issues"
+    "url": "https://github.com/xianbaum/red-x/issues"
   },
-  "homepage": "https://github.com/xianbaum/redditx#readme"
+  "homepage": "https://github.com/xianbaum/red-x#readme"
 }

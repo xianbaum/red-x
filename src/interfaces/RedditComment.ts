@@ -1,13 +1,16 @@
-export interface RedditComment {
-    // toggle(): void;
-    // reply(): void;
+import { CommentModel } from "../redditapimodels/Comment";
+export type RedditComment = RedditCommentProperties;
+
+export interface RedditCommentProperties {
     readonly body: string;
-    readonly posterName: string;
+    readonly author: string;
     readonly id: string;
     readonly score?: number;
     readonly datePosted: Date;
-    readonly edited: boolean;
-    // readonly isHidden: boolean;
+    readonly isEdited: boolean;
+    readonly parentId: string | null;
+    readonly fullname: string;
+    readonly bodyHtml: string;
 }
 
 export enum RedditCommentType {

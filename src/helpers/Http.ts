@@ -10,8 +10,11 @@ export class ResponseHeader implements RequestHeader {
 }
 
 export namespace Http {
-    export function checkData(data: any): string|null {
+    export function checkData(data: any, xWwwFormUrlencoded?: boolean): string|null {
         if(typeof data === "object") {
+            if(xWwwFormUrlencoded) {
+                return Http.createxWwwFormUrlEncoded(data);
+            }
             return JSON.stringify(data);
         }
         if(typeof data === "number" || typeof data === "boolean" || typeof data === "string") {
@@ -22,11 +25,12 @@ export namespace Http {
         }
         return null;
     }
-    export function request(method: string, url:string, data?: any, headers?: RequestHeader[], contentType?: string): Promise<any> {
+    export function request(method: string, url:string, data?: any, headers?: RequestHeader[],
+        xWwwFormUrlencoded?: boolean): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             let dataToSend: string|null;
             try {
-                dataToSend = Http.checkData(data);
+                dataToSend = Http.checkData(data, xWwwFormUrlencoded);
             } catch(error) {
                return  reject(error.name);
             }
@@ -51,16 +55,16 @@ export namespace Http {
             xhr.send(dataToSend);
         });
     }
-    export function post(url:string, data?: any, headers?: RequestHeader[], contentType?: string): Promise<any> {
-        return Http.request("POST", url, data, headers);
+    export function post(url:string, data?: any, headers?: RequestHeader[], xWwwFormUrlencoded?: boolean): Promise<any> {
+        return Http.request("POST", url, data, headers, xWwwFormUrlencoded);
     }
     export function get(url:string, headers?: RequestHeader[]) {
         return Http.request("GET", url, undefined, headers);
     }
-    export function createQueryString(data: any): string {
+    export function createQueryString(data: object): string {
         var isFirst = true;
         var qs = "";
-        if(typeof data === "object" && data !== null) {
+        if(data !== null) {
             Object.keys(data).map(
                 e => {
                     if(isFirst) {
@@ -69,10 +73,26 @@ export namespace Http {
                     } else {
                         qs+="&"
                     }
-                    qs+=encodeURIComponent(e)+"="+encodeURIComponent(data[e]);
+                    qs+=encodeURIComponent(e)+"="+encodeURIComponent((<any>data)[e]);
                 }
             )
         }
         return qs;
+    }
+    export function createxWwwFormUrlEncoded(data: object) {
+        var result = "";
+        if(data !== null) {
+            let length = Object.keys(data).length;
+            Object.keys(data).map(
+                (e, i) => 
+                {
+                    result+=encodeURIComponent(e)+"="+encodeURIComponent((<any>data)[e]);
+                    if(i < length - 1) {
+                        result+="&";
+                    }
+                }
+            )
+        }
+        return result;
     }
 }

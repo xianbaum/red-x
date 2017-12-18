@@ -4,7 +4,7 @@ import { StorageManager } from "./StorageManager";
 import { Url } from "./helpers/Url";
 export class RedditMaster {
     private static requestAccess() {
-        Modal.createYesNo("redditx requires permission from your reddit account. Would you like to grant permissions now?", () => {
+        Modal.createYesNo("red-x requires permission from your reddit account. Would you like to grant permissions now?", () => {
             window.location.href = RedditApi.authorizeUrl();
         }).open();
     }
