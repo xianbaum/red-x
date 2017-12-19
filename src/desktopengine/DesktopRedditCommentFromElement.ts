@@ -2,8 +2,8 @@ import { RedditComment, RedditCommentTypeId, RedditCommentType } from "../interf
 import { RedditElements } from "./RedditElements";
 import { TypePrefix } from "../redditapimodels/Thing";
 
-export class DesktopThreadRedditComment implements RedditComment, RedditCommentTypeId {
-    toggle (){
+export class DesktopRedditCommentFromElement implements RedditComment, RedditCommentTypeId {
+    toggle () {
         if(this.element.classList.contains("collapsed")) {
             this.element.classList.remove("collapsed");
             this.element.classList.add("noncollapsed");
@@ -158,31 +158,7 @@ export class DesktopThreadRedditComment implements RedditComment, RedditCommentT
     element: HTMLDivElement;
     constructor(element: HTMLDivElement) {
         this.element = element;
-        let voterElement = element.getElementsByClassName("midcol")[0];
-        let entryElement = element.getElementsByClassName("entry")[0];
-        this.hookedElements = {
-            upvote: <HTMLElement>voterElement.getElementsByClassName("up")[0] || <HTMLElement>voterElement.getElementsByClassName("upmod")[0],
-            downvote:<HTMLElement> voterElement.getElementsByClassName("down")[0] || <HTMLElement> voterElement.getElementsByClassName("downmod")[0], 
-            reply:<HTMLElement> entryElement.getElementsByClassName("reply-button")[0],
-            collapse:<HTMLElement> entryElement.getElementsByClassName("expand")[0]
-        };
-        this.hookedElements.collapse.addEventListener("click", () => {
-            this.toggle();
-        });
-        this.hookedElements.upvote.addEventListener("click", () => {
 
-        });
-        this.hookedElements.downvote.addEventListener("click", () => {
-
-        });
-        this.hookedElements.reply.addEventListener("click", () =>{
-            this.toggleReplyForm();
-        })
     }
-    private hookedElements: {
-        upvote: HTMLElement;
-        downvote: HTMLElement;
-        reply: HTMLElement;
-        collapse: HTMLElement;
-    };
+    private hookedElements: RedditElements.HookedCommentElements;
 }

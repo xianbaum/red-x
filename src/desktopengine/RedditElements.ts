@@ -5,6 +5,13 @@ import { ApiRedditComment } from "../apiengine/ApiRedditComment";
 import { CommentModel } from "../redditapimodels/Comment";
 
 export namespace RedditElements {
+    export interface HookedCommentElements {
+        upvote: HTMLElement;
+        downvote: HTMLElement;
+        reply: HTMLElement;
+        collapse: HTMLElement;
+    }
+
 /*
 Adapted to look similarly to this from reddit:
 <form action="#" class="usertext cloneable warn-on-unload">
@@ -76,7 +83,7 @@ Adapted to look similarly to this from reddit:
 /*
 adapted to be identical to a reddit comment
 */
-    export function generateCommentElement(comment: RedditComment) {
+    export function generateCommentElement(comment: RedditComment): HTMLDivElement {
         // var siteTable = document.createElement("div");
         // siteTable.id = "siteTable_"+ comment.fullname;
         // siteTable.classList.add("sitetable", "listing");
@@ -85,9 +92,9 @@ adapted to be identical to a reddit comment
         comEl.classList.add("thing", "id-"+comment.fullname, "noncollapsed", "comment")
         comEl.setAttribute("data-fullname", comment.fullname);
         comEl.setAttribute("data-type", "comment");
-//        comEl.setAttribute("data-subreddit", )
-//        comEl.setAttribute("data-subreddit-prefixed")
-//        data-subreddit-fullname
+        //        comEl.setAttribute("data-subreddit", )
+        //        comEl.setAttribute("data-subreddit-prefixed")
+        //        data-subreddit-fullname
         comEl.setAttribute("data-author", comment.author);
         //data-replies
         //data-permalink
@@ -124,7 +131,7 @@ adapted to be identical to a reddit comment
         var toggle = document.createElement("a");
         toggle.classList.add("expand");
         toggle.href = "javascript:void(0)";
-//        toggle.onclick = "no!";
+        //        toggle.onclick = "no!";
         toggle.innerText="[–]";
         var user = document.createElement("a");
         //Todo: User id to classlist
@@ -244,5 +251,29 @@ adapted to be identical to a reddit comment
         comEl.appendChild(child);
         comEl.appendChild(clearLeft);
         return comEl;
+    }
+
+    export function hookCommentElements(commentElement: HTMLDivElement, comment: RedditComment) {
+        let hookedElements: HookedCommentElements;
+        let voterElement = commentElement.getElementsByClassName("midcol")[0];
+        let entryElement = commentElement.getElementsByClassName("entry")[0];
+        hookedElements = {
+            upvote: <HTMLElement>voterElement.getElementsByClassName("up")[0] || <HTMLElement>voterElement.getElementsByClassName("upmod")[0],
+            downvote:<HTMLElement> voterElement.getElementsByClassName("down")[0] || <HTMLElement> voterElement.getElementsByClassName("downmod")[0], 
+            reply:<HTMLElement> entryElement.getElementsByClassName("reply-button")[0],
+            collapse:<HTMLElement> entryElement.getElementsByClassName("expand")[0]
+        };
+        hookedElements.collapse.addEventListener("click", () => {
+            commentActions.toggle();
+        });
+        hookedElements.upvote.addEventListener("click", () => {
+
+        });
+        hookedElements.downvote.addEventListener("click", () => {
+
+        });
+        hookedElements.reply.addEventListener("click", () =>{
+            toggleReplyForm();
+        })
     }
 }
