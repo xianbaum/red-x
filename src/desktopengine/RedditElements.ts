@@ -1,8 +1,10 @@
 import { LinkCommentApi } from "../RedditApi";
+import { DesktopRedditComment } from "../interfaces/DesktopRedditComment";
 import { RedditComment } from "../interfaces/RedditComment";
 import { DesktopThreadServices } from "./DesktopThreadServices";
 import { ApiRedditComment } from "../apiengine/ApiRedditComment";
 import { CommentModel } from "../redditapimodels/Comment";
+import { DesktopRedditCommentFromElement } from "./DesktopRedditCommentFromElement";
 
 export namespace RedditElements {
     export interface HookedCommentElements {
@@ -70,7 +72,7 @@ Adapted to look similarly to this from reddit:
         form.onsubmit = () =>{
             LinkCommentApi.postComment(parentId, textarea.value).then((commentJson) => {
                 for(var comment of commentJson.json.data.things) {
-                    DesktopThreadServices.addComment(new ApiRedditComment(comment.data));
+                    DesktopThreadServices.addComment(new ApiRedditComment(comment.data).toDesktopRedditComment());
                 }
                 if(form.parentNode != null){
                     form.parentNode.removeChild(form);
@@ -161,6 +163,7 @@ adapted to be identical to a reddit comment
             likes.title = ""+(comment.score+1);
             likes.innerText = ""+(comment.score+1)+" points";
         }
+        var space = document.createTextNode(" ");
         var time = document.createElement("time");
         time.title = comment.datePosted.toLocaleString();
         time.classList.add("live-timestamp");
@@ -176,6 +179,7 @@ adapted to be identical to a reddit comment
         tagline.appendChild(dislikes);
         tagline.appendChild(unvoted);
         tagline.appendChild(likes);
+        tagline.appendChild(space);
         tagline.appendChild(time);
         tagline.appendChild(numchildren);
         entry.appendChild(tagline);
@@ -252,28 +256,108 @@ adapted to be identical to a reddit comment
         comEl.appendChild(clearLeft);
         return comEl;
     }
-
-    export function hookCommentElements(commentElement: HTMLDivElement, comment: RedditComment) {
+    export function toggle(element: HTMLDivElement) {
+        if(element.classList.contains("collapsed")) {
+            element.classList.remove("collapsed");
+            element.classList.add("noncollapsed");
+        } else {
+            element.classList.add("collapsed");
+            element.classList.remove("noncollapsed");
+        }
+    }
+    export function toggleReplyForm(element: HTMLDivElement, fullname: string) {
+        var child = element.getElementsByClassName("child")[0];
+        var childsChild : Element | undefined = child.children[0];
+        if(childsChild !== undefined && childsChild.tagName.toUpperCase() === "FORM") {
+            /*remove*/
+            child.removeChild(childsChild);
+        } else {
+            /*add*/
+            let formToAdd = RedditElements.generateCommentForm(fullname);
+            if(childsChild === undefined) {
+                child.appendChild(formToAdd);
+            } else { /* first tagname is not form */
+                child.insertBefore(formToAdd, childsChild);
+            }
+        }
+    }
+    export function hookDesktopCommentElements(commentElement: HTMLDivElement, comment: DesktopRedditComment) {
         let hookedElements: HookedCommentElements;
         let voterElement = commentElement.getElementsByClassName("midcol")[0];
         let entryElement = commentElement.getElementsByClassName("entry")[0];
         hookedElements = {
-            upvote: <HTMLElement>voterElement.getElementsByClassName("up")[0] || <HTMLElement>voterElement.getElementsByClassName("upmod")[0],
-            downvote:<HTMLElement> voterElement.getElementsByClassName("down")[0] || <HTMLElement> voterElement.getElementsByClassName("downmod")[0], 
+            upvote: <HTMLElement>voterElement.getElementsByClassName("arrow")[0] || <HTMLElement>voterElement.getElementsByClassName("upmod")[0],
+            downvote:<HTMLElement> voterElement.getElementsByClassName("arrow")[1] || <HTMLElement> voterElement.getElementsByClassName("downmod")[0], 
             reply:<HTMLElement> entryElement.getElementsByClassName("reply-button")[0],
             collapse:<HTMLElement> entryElement.getElementsByClassName("expand")[0]
         };
         hookedElements.collapse.addEventListener("click", () => {
-            commentActions.toggle();
+            comment.toggle();
         });
         hookedElements.upvote.addEventListener("click", () => {
-
+            if(hookedElements.upvote.classList.contains("upmod")) {
+                comment.vote(0);
+            } else {
+                comment.vote(1);
+            }
         });
         hookedElements.downvote.addEventListener("click", () => {
-
+            if(hookedElements.downvote.classList.contains("downmod")) {
+                comment.vote(0);
+            } else {
+                comment.vote(-1);
+            }
         });
         hookedElements.reply.addEventListener("click", () =>{
-            toggleReplyForm();
+            comment.toggleReplyForm();
         })
+    }
+    export function upvoteElement(element: HTMLDivElement) {
+        let midcol = element.getElementsByClassName("midcol")[0];
+        midcol.classList.remove("unvoted");
+        midcol.classList.remove("dislikes");
+        midcol.classList.add("likes");
+        let upvote = midcol.getElementsByClassName("arrow")[0];
+        upvote.classList.remove("up");
+        upvote.classList.add("upmod");
+        let downvote = midcol.getElementsByClassName("arrow")[1];
+        downvote.classList.remove("downmod");
+        downvote.classList.add("down");
+        let entry = element.getElementsByClassName("entry")[0];
+        entry.classList.remove("dislikes")
+        entry.classList.remove("unvoted");
+        entry.classList.add("likes");
+    }
+    export function downvoteElement(element: HTMLDivElement) {
+        let midcol = element.getElementsByClassName("midcol")[0];
+        midcol.classList.remove("unvoted");
+        midcol.classList.remove("likes");
+        midcol.classList.add("dislikes");
+        let upvote = midcol.getElementsByClassName("arrow")[0];
+        upvote.classList.remove("upmod");
+        upvote.classList.add("up");
+        let downvote = midcol.getElementsByClassName("arrow")[1];
+        downvote.classList.remove("down");
+        downvote.classList.add("downmod");
+        let entry = element.getElementsByClassName("entry")[0];
+        entry.classList.remove("likes")
+        entry.classList.remove("unvoted");
+        entry.classList.add("dislikes");
+    }
+    export function unvoteElement(element: HTMLDivElement) {
+        let midcol = element.getElementsByClassName("midcol")[0];
+        midcol.classList.remove("likes");
+        midcol.classList.remove("dislikes");
+        midcol.classList.add("unvoted");
+        let upvote = midcol.getElementsByClassName("arrow")[0];
+        upvote.classList.remove("upmod");
+        upvote.classList.add("up");
+        let downvote = midcol.getElementsByClassName("arrow")[1];
+        downvote.classList.remove("downmod");
+        downvote.classList.add("down");
+        let entry = element.getElementsByClassName("entry")[0];
+        entry.classList.remove("likes")
+        entry.classList.remove("dislikes");
+        entry.classList.add("unvoted");
     }
 }

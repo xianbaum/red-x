@@ -79,6 +79,18 @@ export namespace LinkCommentApi {
                 return response;
             });
     }
+    export function vote(parentFullname: string, dir: -1 | 0 | 1)  {
+        let data = {
+            dir: dir,
+            id: parentFullname,
+            rank: 2
+        }
+        return Http.post(Helpers.oauthBase+"/api/vote", data,
+        [Helpers.authorizationHeader(), Helpers.userAgent(), Helpers.xWwwFormUrlEncodedContentType()],
+        true).then((response: {} | RedditError) => {
+            Helpers.exceptOnError(response);
+        })
+    }
 }
 namespace Helpers {
     export const base = "https://www.reddit.com";

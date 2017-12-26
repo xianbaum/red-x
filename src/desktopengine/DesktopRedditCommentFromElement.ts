@@ -1,41 +1,31 @@
 import { RedditComment, RedditCommentTypeId, RedditCommentType } from "../interfaces/RedditComment";
 import { RedditElements } from "./RedditElements";
 import { TypePrefix } from "../redditapimodels/Thing";
+import { RedditApi, LinkCommentApi } from "../RedditApi";
 
 export class DesktopRedditCommentFromElement implements RedditComment, RedditCommentTypeId {
     toggle () {
-        if(this.element.classList.contains("collapsed")) {
-            this.element.classList.remove("collapsed");
-            this.element.classList.add("noncollapsed");
-        } else {
-            this.element.classList.add("collapsed");
-            this.element.classList.remove("noncollapsed");
-        }
+        RedditElements.toggle(this.element);
     }
-    upvote() {
-
-    }
-    downvote() {
-
-    }
-    unvote() {
-        
+    vote(dir: -1 | 0 | 1) {
+        LinkCommentApi.vote(this.fullname, dir).then(() => {
+            switch(dir) {
+                case -1:
+                RedditElements.downvoteElement(this.element);
+                break;
+                case 0:
+                RedditElements.unvoteElement(this.element);
+                break;
+                case 1:
+                RedditElements.upvoteElement(this.element);
+                break;
+                default:
+                throw new TypeError("dir is never! value is " + dir)
+            }
+        }) 
     }
     toggleReplyForm() {
-        var child = this.element.getElementsByClassName("child")[0];
-        var childsChild : Element | undefined = child.children[0];
-        if(childsChild !== undefined && childsChild.tagName.toUpperCase() === "FORM") {
-            /*remove*/
-            child.removeChild(childsChild);
-        } else {
-            /*add*/
-            let formToAdd = RedditElements.generateCommentForm(this.fullname);
-            if(childsChild === undefined) {
-                child.appendChild(formToAdd);
-            } else { /* first tagname is not form */
-                child.insertBefore(formToAdd, childsChild);
-            }
-        }
+        RedditElements.toggleReplyForm(this.element, this.fullname);
     }
     submitReply() {
 
@@ -155,10 +145,10 @@ export class DesktopRedditCommentFromElement implements RedditComment, RedditCom
         let entryElement = this.element.getElementsByClassName("entry")[0];
         return entryElement.getElementsByClassName("edited-timestamp")[0] != null;
     }
-    element: HTMLDivElement;
+    element: HTMLDivElement;    
     constructor(element: HTMLDivElement) {
         this.element = element;
-
+        RedditElements.hookDesktopCommentElements(this.element, this);
     }
     private hookedElements: RedditElements.HookedCommentElements;
 }
