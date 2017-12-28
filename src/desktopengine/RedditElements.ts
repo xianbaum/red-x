@@ -1,17 +1,24 @@
-import { LinkCommentApi } from "../RedditApi";
+import { LinkCommentApi, RedditApi } from "../RedditApi";
 import { DesktopRedditComment } from "../interfaces/DesktopRedditComment";
 import { RedditComment } from "../interfaces/RedditComment";
 import { DesktopThreadServices } from "./DesktopThreadServices";
 import { ApiRedditComment } from "../apiengine/ApiRedditComment";
 import { CommentModel } from "../redditapimodels/Comment";
 import { DesktopRedditCommentFromElement } from "./DesktopRedditCommentFromElement";
+import { Dictionary } from "../helpers/Dictionary";
 
 export namespace RedditElements {
     export interface HookedCommentElements {
         upvote: HTMLElement;
         downvote: HTMLElement;
-        reply: HTMLElement;
+        reply: HTMLElement | null;
         collapse: HTMLElement;
+        deleteToggle: HTMLAnchorElement | null;
+        deleteYes: HTMLAnchorElement | null;
+        deleteNo: HTMLAnchorElement | null;
+        editToggle: HTMLAnchorElement | null;
+        editForm: HTMLFormElement | null;
+        editCancel: HTMLButtonElement | null;
     }
 
 /*
@@ -190,6 +197,35 @@ adapted to be identical to a reddit comment
         var body = document.createElement("div");
         body.classList.add("usertext-body", "may-blank-within", "md-container");
         body.innerHTML = comment.bodyHtml;
+        //TODO: only if it u
+        var editDiv = document.createElement("div");
+        editDiv.classList.add("usertext-edit", "md-container");
+        editDiv.style.display = "none";
+        var editMd = document.createElement("div");
+        editMd.classList.add("md");
+        var editTextArea = document.createElement("textarea");
+        editTextArea.rows = 1;
+        editTextArea.cols = 1;
+        editTextArea.innerText = comment.body;
+        editMd.appendChild(editTextArea);
+        var editBottom = document.createElement("div");
+        editBottom.classList.add("bottom-area");
+        var editBottomButtons = document.createElement("div");
+        editBottomButtons.classList.add("usertext-buttons");
+        var editSave = document.createElement("button");
+        editSave.classList.add("save");
+        editSave.type = "submit";
+        editSave.style.display = "none";
+        editSave.innerHTML = "save";
+        var editCancel = document.createElement("button");
+        editSave.classList.add("cancel");
+        editSave.style.display = "none";
+        editSave.innerHTML = "save";
+        editBottomButtons.appendChild(editSave);
+        editBottomButtons.appendChild(editCancel);
+        editBottom.appendChild(editBottomButtons);
+        editDiv.appendChild(editMd);
+        editDiv.appendChild(editBottom);
         form.appendChild(body);
         entry.appendChild(form);
         var buttons = document.createElement("ul");
@@ -285,15 +321,30 @@ adapted to be identical to a reddit comment
         let hookedElements: HookedCommentElements;
         let voterElement = commentElement.getElementsByClassName("midcol")[0];
         let entryElement = commentElement.getElementsByClassName("entry")[0];
+        let deleteToggle = entryElement.getElementsByClassName("del-button")[0];
+        let editToggle = entryElement.getElementsByClassName("edit-usertext")[0];
+        let replyButton: Element | null = entryElement.getElementsByClassName("reply-button")[0];
+        if(replyButton == null) {
+            replyButton = entryElement.querySelector("[data-event-action=reply]");
+        }
         hookedElements = {
-            upvote: <HTMLElement>voterElement.getElementsByClassName("arrow")[0] || <HTMLElement>voterElement.getElementsByClassName("upmod")[0],
-            downvote:<HTMLElement> voterElement.getElementsByClassName("arrow")[1] || <HTMLElement> voterElement.getElementsByClassName("downmod")[0], 
-            reply:<HTMLElement> entryElement.getElementsByClassName("reply-button")[0],
-            collapse:<HTMLElement> entryElement.getElementsByClassName("expand")[0]
+            upvote: <HTMLDivElement>voterElement.getElementsByClassName("arrow")[0] || <HTMLElement>voterElement.getElementsByClassName("upmod")[0],
+            downvote:<HTMLDivElement> voterElement.getElementsByClassName("arrow")[1] || <HTMLElement> voterElement.getElementsByClassName("downmod")[0], 
+            reply: <HTMLAnchorElement>replyButton,
+            collapse:<HTMLAnchorElement> entryElement.getElementsByClassName("expand")[0],
+            deleteToggle: deleteToggle != null ? <HTMLAnchorElement>deleteToggle.getElementsByClassName("togglebutton")[0] : null,
+            deleteYes: deleteToggle != null ? <HTMLAnchorElement>deleteToggle.getElementsByClassName("yes")[0] : null,
+            deleteNo: deleteToggle != null ? <HTMLAnchorElement>deleteToggle.getElementsByClassName("no")[0] : null,
+            editToggle: editToggle != null ? <HTMLAnchorElement>editToggle : null,
+            editForm: editToggle != null ? <HTMLFormElement>entryElement.getElementsByTagName("form")[0] : null,
+            editCancel: editToggle != null ? <HTMLButtonElement>entryElement.getElementsByClassName("cancel")[0] : null
         };
         hookedElements.collapse.addEventListener("click", () => {
             comment.toggle();
         });
+        if(comment.isDeleted) {
+            return;
+        }
         hookedElements.upvote.addEventListener("click", () => {
             if(hookedElements.upvote.classList.contains("upmod")) {
                 comment.vote(0);
@@ -308,9 +359,43 @@ adapted to be identical to a reddit comment
                 comment.vote(-1);
             }
         });
-        hookedElements.reply.addEventListener("click", () =>{
-            comment.toggleReplyForm();
-        })
+        if(hookedElements.reply != null) {
+            hookedElements.reply.addEventListener("click", () =>{
+                comment.toggleReplyForm();
+            });
+        }
+        if(hookedElements.deleteToggle != null && hookedElements.deleteYes != null && hookedElements.deleteNo != null) {
+            hookedElements.deleteToggle.href = "javascript:void(0)";                
+            hookedElements.deleteToggle.addEventListener("click", () => {
+                RedditElements.toggleDeleteElements(commentElement, true);
+            });
+            hookedElements.deleteNo.addEventListener("click", () => {
+                RedditElements.toggleDeleteElements(commentElement, false);
+            });
+            hookedElements.deleteYes.addEventListener("click", () => {
+                LinkCommentApi.deleteThing(comment.fullname).then(() => {
+                    RedditElements.deleteElement(commentElement);                    
+                })
+            });
+            if(hookedElements.editCancel != null && hookedElements.editForm != null && hookedElements.editToggle != null) {
+                hookedElements.editToggle.addEventListener("click", () => {
+                    RedditElements.toggleEditElement(commentElement);
+                });
+                hookedElements.editCancel.addEventListener("click", () => {
+                    RedditElements.toggleEditElement(commentElement, false);
+                });
+                hookedElements.editForm.onsubmit = () => {
+                    LinkCommentApi.editPost(comment.fullname, entryElement.getElementsByTagName("textarea")[0].value).then((response) =>{
+                        entryElement.getElementsByClassName("usertext-body")[0].innerHTML =
+                            response.json.data.things[0].data.body_html;
+                        comment.body = response.json.data.things[0].data.body;
+                        comment.bodyHtml = response.json.data.things[0].data.body_html;
+                        RedditElements.toggleEditElement(commentElement, false);
+                    })
+                    return false;
+                }
+            }
+        }
     }
     export function upvoteElement(element: HTMLDivElement) {
         let midcol = element.getElementsByClassName("midcol")[0];
@@ -359,5 +444,83 @@ adapted to be identical to a reddit comment
         entry.classList.remove("likes")
         entry.classList.remove("dislikes");
         entry.classList.add("unvoted");
+    }
+    export function voteElement(element: HTMLDivElement, dir: -1 | 0 | 1) {
+        switch(dir) {
+            case -1:
+            RedditElements.downvoteElement(element);
+            break;
+            case 0:
+            RedditElements.unvoteElement(element);
+            break;
+            case 1:
+            RedditElements.upvoteElement(element);
+            break;
+            default:
+            throw new TypeError("dir is never! value is " + dir)
+        }
+    }
+    export function toggleDeleteElements(element: HTMLDivElement, showConfirmDialog?: boolean) {
+        const deleteElement = element.getElementsByClassName("del-button")[0];
+        if(showConfirmDialog !== undefined) {
+            if(showConfirmDialog) {
+                deleteElement.getElementsByTagName("span")[0].classList.remove("active");
+                deleteElement.getElementsByTagName("span")[1].classList.add("active");
+            } else {
+                deleteElement.getElementsByTagName("span")[0].classList.add("active");             
+                deleteElement.getElementsByTagName("span")[1].classList.remove("active");
+            }
+        }
+        else {
+            const deleteButton = deleteElement.getElementsByTagName("span")[0].classList;            
+            const confirmDialog = deleteElement.getElementsByTagName("span")[1].classList;            
+            if(deleteButton.contains("active")) {
+                deleteButton.remove("active");
+                confirmDialog.add("active");
+            } else {
+                deleteButton.add("active");
+                confirmDialog.remove("active");
+            }
+        }
+    }
+    export function deleteElement(element: HTMLDivElement) {
+        const deleteElement = element.getElementsByClassName("del-button")[0];
+        deleteElement.innerHTML = "deleted";
+    }
+    export function toggleEditElement(element: HTMLDivElement, toggleEditForm?: boolean) {
+        let bod = (<HTMLDivElement>element.getElementsByClassName("usertext-body")[0]);
+        let ed = (<HTMLDivElement>element.getElementsByClassName("usertext-edit")[0]);
+        //for some reason these are display none on reddit's html
+        (<HTMLButtonElement>ed.getElementsByClassName("save")[0]).style.display = "inline";
+        (<HTMLButtonElement>ed.getElementsByClassName("cancel")[0]).style.display = "inline";        
+        if(typeof toggleEditForm === "boolean") {
+            if(toggleEditForm) {
+                bod.style.display = "none";
+                ed.style.display = "block";
+            } else {
+                bod.style.display = "block";
+                ed.style.display = "none";
+            }
+        } else {
+            if(ed.style.display === "none") {
+                bod.style.display = "none";
+                ed.style.display = "block";
+            } else {
+                bod.style.display = "block";
+                ed.style.display = "none";
+            }
+        }
+    }
+    export function generateCommentList(was?: boolean) {
+        let selector = was ? "was-comment" : "comment";
+        let elements: HTMLCollectionOf<HTMLDivElement> = <HTMLCollectionOf<HTMLDivElement>>document.getElementsByClassName(selector);
+        let comments: Dictionary<DesktopRedditComment> = {};        
+        for(let i = 0; i < elements.length; i++) {
+            let comment = new DesktopRedditCommentFromElement(elements[i]);
+            if(!comment.isDeleted) {
+                comments[comment.id] = comment;
+            }
+        }
+        return comments;
     }
 }

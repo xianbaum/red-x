@@ -9,19 +9,7 @@ export class DesktopRedditCommentFromElement implements RedditComment, RedditCom
     }
     vote(dir: -1 | 0 | 1) {
         LinkCommentApi.vote(this.fullname, dir).then(() => {
-            switch(dir) {
-                case -1:
-                RedditElements.downvoteElement(this.element);
-                break;
-                case 0:
-                RedditElements.unvoteElement(this.element);
-                break;
-                case 1:
-                RedditElements.upvoteElement(this.element);
-                break;
-                default:
-                throw new TypeError("dir is never! value is " + dir)
-            }
+            RedditElements.voteElement(this.element, dir);
         }) 
     }
     toggleReplyForm() {
@@ -57,8 +45,18 @@ export class DesktopRedditCommentFromElement implements RedditComment, RedditCom
         }
         return this._body;
     }
+    set body(value) {
+        this._body = value;
+    }
+    private _bodyHtml?: string ;
     get bodyHtml() {
+        if(this._bodyHtml !== undefined) {
+            return this._bodyHtml;
+        }
         return this.body;
+    }
+    set bodyHtml(value) {
+        this._bodyHtml = value;
     }
     private _id?: string | null;
     get id(): string {
@@ -144,6 +142,9 @@ export class DesktopRedditCommentFromElement implements RedditComment, RedditCom
     get isEdited() {
         let entryElement = this.element.getElementsByClassName("entry")[0];
         return entryElement.getElementsByClassName("edited-timestamp")[0] != null;
+    }
+    get isDeleted() {
+        return this.element.classList.contains("deleted");
     }
     element: HTMLDivElement;    
     constructor(element: HTMLDivElement) {

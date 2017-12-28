@@ -2,7 +2,7 @@ import { CommentModel } from "../redditapimodels/Comment";
 export type RedditComment = RedditCommentProperties;
 
 export interface RedditCommentProperties {
-    readonly body: string;
+    body: string;
     readonly author: string;
     readonly id: string;
     readonly score?: number;
@@ -10,7 +10,8 @@ export interface RedditCommentProperties {
     readonly isEdited: boolean;
     readonly parentId: string | null;
     readonly fullname: string;
-    readonly bodyHtml: string;
+    bodyHtml: string;
+    readonly isDeleted: boolean;
 }
 
 export enum RedditCommentType {

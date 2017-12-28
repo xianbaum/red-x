@@ -14,6 +14,7 @@ import { JsonData } from "./redditapimodels/JsonData";
 import { JsonResponse } from "./redditapimodels/JsonResponse";
 import { CommentModel } from "./redditapimodels/Comment";
 import { RawJson } from "./redditapimodels/RawJson";
+import { RedditMaster } from "./RedditMaster";
 
 export namespace AccountApi {
     export const meBase = "/api/v1/me";    
@@ -75,21 +76,45 @@ export namespace LinkCommentApi {
             [Helpers.authorizationHeader(), Helpers.userAgent(), Helpers.xWwwFormUrlEncodedContentType()],
             true).then((response: JsonResponse<JsonData<ThingsArray<"t1", CommentModel>>>) => {
                 Helpers.exceptOnError(response);
-                console.log(response);
                 return response;
             });
     }
-    export function vote(parentFullname: string, dir: -1 | 0 | 1)  {
+    export function vote(fullname: string, dir: -1 | 0 | 1)  {
         let data = {
             dir: dir,
-            id: parentFullname,
+            id: fullname,
             rank: 2
         }
         return Http.post(Helpers.oauthBase+"/api/vote", data,
         [Helpers.authorizationHeader(), Helpers.userAgent(), Helpers.xWwwFormUrlEncodedContentType()],
-        true).then((response: {} | RedditError) => {
+        true).then((response: {} ) => {
             Helpers.exceptOnError(response);
-        })
+        });
+    }
+    export function deleteThing(fullname: string) {
+        let data = {
+            id: fullname
+        };
+        return Http.post(Helpers.oauthBase+"/api/del", data,
+        [Helpers.authorizationHeader(), Helpers.userAgent(), Helpers.xWwwFormUrlEncodedContentType()],
+        true).then((response: {} ) => {
+            Helpers.exceptOnError(response);  
+        });
+    }
+    export function editPost(fullname: string, text: string) {
+        let data = {
+            api_type: "json",
+            return_rtjson: false,
+            text: text,
+            thing_id: fullname,
+            raw_json: 1
+        };
+        return Http.post(Helpers.oauthBase+"/api/editusertext", data,
+            [Helpers.authorizationHeader(), Helpers.userAgent(), Helpers.xWwwFormUrlEncodedContentType()],
+            true).then((response: JsonResponse<JsonData<ThingsArray<"t1", CommentModel>>>) => {
+                Helpers.exceptOnError(response);
+                return response;
+        });
     }
 }
 namespace Helpers {
@@ -106,6 +131,9 @@ namespace Helpers {
     }
     export function exceptOnError(response: any) {
         if(Helpers.isError(response)) {
+            if(response.error === 401) {
+                RedditMaster.reRequestAccess();
+            }
             throw new RedditValiationError(Helpers.errorToString(response));
         }
     }

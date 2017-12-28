@@ -49,4 +49,7 @@ export class StorageManager {
         localStorage.setItem(StorageManager.userAccessKey,
             JSON.stringify(StorageManager._lsUser));
     }
+    static clearUserAccess() {
+        localStorage.removeItem(StorageManager.userAccessKey)
+    }
 }

@@ -11,8 +11,14 @@ export class ApiRedditComment implements RedditComment {
     get body() {
         return this.adapter.body;
     }
+    set body(value) {
+        this.adapter.body = value;
+    }
     get bodyHtml() {
         return this.adapter.body_html;
+    }
+    set bodyHtml(value) {
+        this.adapter.body_html = value;
     }
     get author() {
         return this.adapter.author;
@@ -38,6 +44,9 @@ export class ApiRedditComment implements RedditComment {
     get parentFullname() {
         return this.adapter.parent_id;
     }
+    get isDeleted() {
+        return this.adapter.body === "deleted";
+    }
     constructor(comment: CommentModel) {
         this.adapter = comment;
     }
@@ -47,23 +56,14 @@ export class ApiRedditComment implements RedditComment {
 class DesktopRedditCommentFromApi implements DesktopRedditComment  {
     vote(dir: -1 | 0 | 1) {
         LinkCommentApi.vote(this.fullname, dir).then(() => {
-            switch(dir) {
-                case -1:
-                RedditElements.downvoteElement(this.element);
-                break;
-                case 0:
-                RedditElements.unvoteElement(this.element);
-                break;
-                case 1:
-                RedditElements.upvoteElement(this.element);
-                break;
-                default:
-                throw new TypeError("dir is never! value is " + dir)
-            }
+            RedditElements.voteElement(this.element, dir);            
         }) 
     }
     get body() {
         return this.apiAdapter.body;
+    }
+    set body(value) {
+        this.apiAdapter.body = value;
     }
     get author() {
         return this.apiAdapter.author;
@@ -85,6 +85,12 @@ class DesktopRedditCommentFromApi implements DesktopRedditComment  {
     }
     get bodyHtml() {
         return this.apiAdapter.bodyHtml;
+    }
+    set bodyHtml(value) {
+        this.apiAdapter.bodyHtml = value;
+    }
+    get isDeleted() {
+        return false //TODO This
     }
     toggle() {
         RedditElements.toggle(this.element);

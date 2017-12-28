@@ -8,6 +8,12 @@ export class RedditMaster {
             window.location.href = RedditApi.authorizeUrl();
         }).open();
     }
+    public static reRequestAccess() {
+        StorageManager.clearUserAccess();
+        Modal.createYesNo("red-x got unauthorized (I'm not sure why this happens). Would you like to grant permissions now?", () => {
+            window.location.href = RedditApi.authorizeUrl();
+        }).open();
+    }
     static verifyCode(): Promise<void> {
         return new Promise<any>( (resolve, reject) => {
             let ua = StorageManager.getUserAccess();
@@ -31,6 +37,6 @@ export class RedditMaster {
             } else {
                 resolve();
             }
-        })
-    } 
+        });
+    }
 }

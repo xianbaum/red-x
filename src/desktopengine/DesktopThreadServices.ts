@@ -4,7 +4,7 @@ import { RedditElements } from "./RedditElements";
 
 export class DesktopThreadServices {
     static processRedditThread() {
-        this.populateCommentsList();
+        this.comments = RedditElements.generateCommentList();
     }
     public static addComment(comment: DesktopRedditComment) {
         if(this.comments[comment.id] === undefined) {
@@ -17,13 +17,6 @@ export class DesktopThreadServices {
         else {
             this.comments[comment.parentId].
                 element.getElementsByClassName("child")[0].appendChild(comment.element);
-        }
-    }
-    private static populateCommentsList() {
-        let elements: NodeListOf<HTMLDivElement> = <NodeListOf<HTMLDivElement>>document.querySelectorAll("[data-type=comment]");
-        for(let element of elements) {
-            let comment = new DesktopRedditCommentFromElement(element);
-            this.comments[comment.id] = comment;
         }
     }
     static comments: {[id: string] : DesktopRedditComment } = {};

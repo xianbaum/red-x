@@ -1,5 +1,7 @@
 import { Url } from "../helpers/Url";
 import { DesktopThreadServices } from "./DesktopThreadServices";
+import { DesktopUserPageServices } from "./DesktopUserPageServices";
+import { DesktopMessagesServices } from "./DesktopMessagesServices";
 
 export enum PageType {
     Front,
@@ -7,7 +9,9 @@ export enum PageType {
     Thread,
     Submit,
     Search,
-    Gilded
+    Gilded,
+    User,
+    Messages
 }
 
 export class DesktopEngine  {
@@ -20,6 +24,12 @@ export class DesktopEngine  {
             this.pageType = PageType.Thread;
             this.threadServices = new DesktopThreadServices();
             DesktopThreadServices.processRedditThread();
+        } else if(this.pageIsUser) {
+            this.pageType = PageType.User;
+            DesktopUserPageServices.processUserPage();
+        } else if(this.pageIsMessages) {
+            this.pageType = PageType.Messages;
+            DesktopMessagesServices.processMessagesPage();
         }
     }
     private get subredditName() {
@@ -74,5 +84,11 @@ export class DesktopEngine  {
         return !this.pageIsThread &&
             this.url.path.indexOf("wiki",
             this.url.path.indexOf(this.subredditName)+1) != -1
+    }
+    private get pageIsUser() {
+        return !this.pageIsSubreddit && this.url.path.indexOf("/user/") > -1;
+    }
+    private get pageIsMessages() {
+        return !this.pageIsSubreddit && this.url.path.indexOf("/message/") > -1;
     }
 }
