@@ -1,10 +1,16 @@
 import { DesktopRedditCommentFromElement }  from "./DesktopRedditCommentFromElement";
 import { DesktopRedditComment } from "../interfaces/DesktopRedditComment";
 import { RedditElements } from "./RedditElements";
+import { RedditThread } from "../interfaces/RedditThread";
 
 export class DesktopThreadServices {
     static processRedditThread() {
         this.comments = RedditElements.generateCommentList();
+        let threads = RedditElements.generateLinkList();
+        for(var i in threads) {
+            this.thread = threads[i];
+        }
+        RedditElements.hookThreadCommentForm();
     }
     public static addComment(comment: DesktopRedditComment) {
         if(this.comments[comment.id] === undefined) {
@@ -19,5 +25,6 @@ export class DesktopThreadServices {
                 element.getElementsByClassName("child")[0].appendChild(comment.element);
         }
     }
+    static thread: RedditThread;
     static comments: {[id: string] : DesktopRedditComment } = {};
 }

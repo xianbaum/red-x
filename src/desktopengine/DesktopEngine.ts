@@ -2,7 +2,8 @@ import { Url } from "../helpers/Url";
 import { DesktopThreadServices } from "./DesktopThreadServices";
 import { DesktopUserPageServices } from "./DesktopUserPageServices";
 import { DesktopMessagesServices } from "./DesktopMessagesServices";
-
+import {SubmitServices } from "./SubmitServices";
+import {SubredditServices} from "./SubredditServices";
 export enum PageType {
     Front,
     Subreddit,
@@ -30,6 +31,10 @@ export class DesktopEngine  {
         } else if(this.pageIsMessages) {
             this.pageType = PageType.Messages;
             DesktopMessagesServices.processMessagesPage();
+        } else if(this.pageIsFrontPage || this.pageIsSubreddit) {
+            SubredditServices.init();
+        } else if(this.pageIsSubmit) {
+            new SubmitServices().initSubmitPage();
         }
     }
     private get subredditName() {
@@ -55,7 +60,8 @@ export class DesktopEngine  {
     }
     private get pageIsSubmit() {
         if(this.subredditName === undefined) {
-            return false;
+            return !this.pageIsSearch &&
+            this.url.path.indexOf("submit") != -1
         }
         return !this.pageIsThread &&
             this.url.path.indexOf("submit",

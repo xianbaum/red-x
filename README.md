@@ -1,22 +1,22 @@
 ## red-x
-red-x is a browser extension or userscript for Reddit created with the intent to use Reddit without requiring nonfree javascript.
+
+red-x is a browser extension or userscript for Reddit created with the intent to use Reddit without nonfree javascript.
 
 ## Features
 
-red-x is not in a usable state; I am developing new features but right now, it can currently
+red-x allows you to do the things that are essential to using reddit
 
-* reply to comments
-* upvote and downvote comments
-* collapse and uncollapse comments (currently only in threads)
+* post links and selfposts
+* reply to things
+* upvote and downvote things
+* collapse and uncollapse comments
+* delete and edit your comments
 
 ## Planned features
 
-* post links and self posts
-* upvote and downvote threads
-* reply to comments
-* upvote and downvote comments
-* collapse and uncollapse comments
-* load threads
+* load more comments functionality
+* delete and edit selfposts and links
+
 
 ## Building
 

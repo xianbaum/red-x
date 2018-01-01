@@ -1,6 +1,7 @@
 import { RedditComment } from "./RedditComment";
+import { Votable } from "./Votable";
 
-export interface DesktopRedditComment extends RedditComment{
+export interface DesktopRedditComment extends RedditComment, Votable{
     body: string;
     readonly author: string;
     readonly id: string;

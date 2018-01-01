@@ -12,7 +12,7 @@
     "webextension": "npm run tsc && npm run browserify-webextension",
     "tsc": "tsc",
     "browserify-webextension": "browserify tsout/main.js > webextension/browserbundle.js",
-    "browserify-userscript": "browserify -p [ browserify-userscript-header --file userscript.meta.js ] tsout/main.js > redx.js"
+    "browserify-userscript": "browserify -p [ browserify-userscript-header --file userscript.meta.js ] tsout/main.js > red-x.js"
   },
   "repository": {
     "type": "git",

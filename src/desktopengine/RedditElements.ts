@@ -6,6 +6,10 @@ import { ApiRedditComment } from "../apiengine/ApiRedditComment";
 import { CommentModel } from "../redditapimodels/Comment";
 import { DesktopRedditCommentFromElement } from "./DesktopRedditCommentFromElement";
 import { Dictionary } from "../helpers/Dictionary";
+import {DesktopRedditThreadFromElement} from "./DesktopRedditThreadFromElement";
+import { Votable } from "../interfaces/Votable";
+import {RedditThread} from "../interfaces/RedditThread";
+import { SubredditServices } from "./SubredditServices";
 
 export namespace RedditElements {
     export interface HookedCommentElements {
@@ -397,6 +401,25 @@ adapted to be identical to a reddit comment
             }
         }
     }
+    export function hookVoterElement(element:HTMLElement, comment:Votable) {
+        let voterElement = element.getElementsByClassName("midcol")[0];
+        let upvote = voterElement.getElementsByClassName("arrow")[0] || <HTMLElement>voterElement.getElementsByClassName("upmod")[0];
+        let downvote = voterElement.getElementsByClassName("arrow")[1] || <HTMLElement> voterElement.getElementsByClassName("downmod")[0];
+        upvote.addEventListener("click", () => {
+            if(upvote.classList.contains("upmod")) {
+                comment.vote(0);
+            } else {
+                comment.vote(1);
+            }
+        });
+        downvote.addEventListener("click", () => {
+            if(downvote.classList.contains("downmod")) {
+                comment.vote(0);
+            } else {
+                comment.vote(-1);
+            }
+        });
+    }
     export function upvoteElement(element: HTMLDivElement) {
         let midcol = element.getElementsByClassName("midcol")[0];
         midcol.classList.remove("unvoted");
@@ -522,5 +545,32 @@ adapted to be identical to a reddit comment
             }
         }
         return comments;
+    }
+    export function generateLinkList(was?: boolean) {
+        let selector = was ? "was-link" : "link";
+        let elements: HTMLCollectionOf<HTMLDivElement> = <HTMLCollectionOf<HTMLDivElement>>document.getElementsByClassName(selector);
+        let comments: Dictionary<RedditThread> = {};        
+        for(let i = 0; i < elements.length; i++) {
+            let comment = new DesktopRedditThreadFromElement(elements[i]);
+            comments[comment.fullname] = comment;
+        }
+        return comments;
+    }
+    export function hookThreadCommentForm() {
+        let formTextarea = <HTMLTextAreaElement>document.querySelector("div.usertext-edit:nth-child(2) > div:nth-child(1) > textarea:nth-child(1)");
+        let submitButton = <HTMLButtonElement>document.querySelector(".usertext-buttons > button:nth-child(1)");
+        let form = <HTMLFormElement>document.querySelector("form.usertext:nth-child(3)");
+        form.onsubmit = () => {
+            submitButton.disabled = true;
+            formTextarea.disabled = true;
+            LinkCommentApi.postComment(DesktopThreadServices.thread.fullname, formTextarea.value).then( (commentJson) => {
+                formTextarea.style.display = "none";
+                submitButton.style.display = "none";
+                for(var comment of commentJson.json.data.things) {
+                    DesktopThreadServices.addComment(new ApiRedditComment(comment.data).toDesktopRedditComment());
+                }
+            });
+            return false;
+        }
     }
 }

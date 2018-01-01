@@ -116,6 +116,30 @@ export namespace LinkCommentApi {
                 return response;
         });
     }
+    export function submitPost(kind: "self" | "link", title: string, linkOrText: string, subreddit: string) {
+        let data: any = {
+            ad: false,
+            api_type: "json",
+            kind: kind,
+            nsfw: false,
+            resubmit: true,
+            spoiler: false,
+            sr: subreddit,
+            title: title
+        };
+        if(kind == "self") {
+            data.text = linkOrText;
+        } else {
+            data.url = linkOrText;
+        }
+        return Http.post(Helpers.oauthBase+"/api/submit", data,
+        [Helpers.authorizationHeader(), Helpers.userAgent(), Helpers.xWwwFormUrlEncodedContentType()],
+        true).then((response: any) => {
+            console.log(response);
+            Helpers.exceptOnError(response);
+            return response;
+    });
+    }
 }
 namespace Helpers {
     export const base = "https://www.reddit.com";
