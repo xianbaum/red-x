@@ -33,9 +33,9 @@ export class StorageManager {
             JSON.stringify(StorageManager._lsSettings));
     }
     private static _lsUser?: UserAccess;
-    static getUserAccess(): UserAccess {
+    static getUserAccess(username: string): UserAccess {
         if(StorageManager._lsUser === undefined) {
-            let storage = localStorage.getItem(StorageManager.userAccessKey);
+            let storage = localStorage.getItem(StorageManager.userAccessKey + "_" + username);
             if(storage == null || storage === "undefined") {
                 StorageManager._lsUser = new UserAccess();
             } else {
@@ -44,12 +44,12 @@ export class StorageManager {
         }
         return <UserAccess>StorageManager._lsUser;
     }
-    static saveUserAccess(value: UserAccess) {
+    static saveUserAccess(value: UserAccess, username: string) {
         StorageManager._lsUser = value;
-        localStorage.setItem(StorageManager.userAccessKey,
+        localStorage.setItem(StorageManager.userAccessKey + "_" + username,
             JSON.stringify(StorageManager._lsUser));
     }
-    static clearUserAccess() {
-        localStorage.removeItem(StorageManager.userAccessKey)
+    static clearUserAccess(username: string) {
+        localStorage.removeItem(StorageManager.userAccessKey + username)
     }
 }

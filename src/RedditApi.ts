@@ -15,6 +15,7 @@ import { JsonResponse } from "./redditapimodels/JsonResponse";
 import { CommentModel } from "./redditapimodels/Comment";
 import { RawJson } from "./redditapimodels/RawJson";
 import { RedditMaster } from "./RedditMaster";
+import { DesktopEngine } from "./desktopengine/DesktopEngine";
 
 export namespace AccountApi {
     export const meBase = "/api/v1/me";    
@@ -166,10 +167,10 @@ namespace Helpers {
         return response;
     }
     export function authorizationHeader(): RequestHeader{
-        if(StorageManager.getUserAccess().accessToken == null) {
+        if(StorageManager.getUserAccess(<string>DesktopEngine.username).accessToken == null) {
             throw new ReferenceError("Access token is null - cannot proceed");
         }
-        return new ResponseHeader("Authorization","Bearer "+StorageManager.getUserAccess().accessToken);
+        return new ResponseHeader("Authorization","Bearer "+StorageManager.getUserAccess(<string>DesktopEngine.username).accessToken);
     }
     export function userAgent(): RequestHeader {
         navigator.appVersion

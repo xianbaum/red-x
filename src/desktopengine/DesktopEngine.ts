@@ -4,6 +4,8 @@ import { DesktopUserPageServices } from "./DesktopUserPageServices";
 import { DesktopMessagesServices } from "./DesktopMessagesServices";
 import {SubmitServices } from "./SubmitServices";
 import {SubredditServices} from "./SubredditServices";
+import {LoginServices} from "./LoginServices";
+
 export enum PageType {
     Front,
     Subreddit,
@@ -24,17 +26,29 @@ export class DesktopEngine  {
         if(this.pageIsThread) {
             this.pageType = PageType.Thread;
             this.threadServices = new DesktopThreadServices();
-            DesktopThreadServices.processRedditThread();
+            if(DesktopEngine.isLoggedIn) {
+                DesktopThreadServices.processRedditThread();
+            }
         } else if(this.pageIsUser) {
             this.pageType = PageType.User;
-            DesktopUserPageServices.processUserPage();
+            if(DesktopEngine.isLoggedIn) {
+                DesktopUserPageServices.processUserPage();
+            }
         } else if(this.pageIsMessages) {
             this.pageType = PageType.Messages;
-            DesktopMessagesServices.processMessagesPage();
+            if(DesktopEngine.isLoggedIn) {
+                DesktopMessagesServices.processMessagesPage();
+            }
         } else if(this.pageIsFrontPage || this.pageIsSubreddit) {
-            SubredditServices.init();
+            if(DesktopEngine.isLoggedIn) {
+                SubredditServices.init();
+            }
         } else if(this.pageIsSubmit) {
-            new SubmitServices().initSubmitPage();
+            if(DesktopEngine.isLoggedIn) {
+                new SubmitServices().initSubmitPage();
+            }
+        } else if(this.pageIsLogin) {
+            LoginServices.addRecaptcha();
         }
     }
     private get subredditName() {
@@ -96,5 +110,28 @@ export class DesktopEngine  {
     }
     private get pageIsMessages() {
         return !this.pageIsSubreddit && this.url.path.indexOf("/message/") > -1;
+    }
+    private get pageIsLogin() {
+        return  this.url.path == "/login" || this.url.path == "/post/reg";
+    }
+    public static get isLoggedIn() {
+        try {
+            return (<HTMLElement>document.getElementsByClassName("user")[0]).innerText != "Want to join? Log in or sign up in seconds.";
+        } catch { 
+            return false;
+        }
+    }
+    public static get username() {
+        try {
+            return (<HTMLElement>document.getElementsByClassName("user")[0]).innerText.substr(0,(<HTMLElement>document.getElementsByClassName("user")[0]).innerText.indexOf("(") - 1);
+        } catch {
+            return undefined;
+        }
+    }
+    public static hookLogoutButton() {
+        let logoutButton = (<HTMLFormElement> document.getElementsByClassName("logout")[0]);
+        logoutButton.onclick = () => {
+            logoutButton.submit();
+        }
     }
 }

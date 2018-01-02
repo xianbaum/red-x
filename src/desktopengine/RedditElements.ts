@@ -573,4 +573,52 @@ adapted to be identical to a reddit comment
             return false;
         }
     }
+    export function generateNoScriptCaptchaDiv() {
+        let captchaDiv = document.getElementsByClassName("g-recaptcha")[0];
+        let sitekey = <string>captchaDiv.getAttribute("data-sitekey");
+        let containerDiv = document.createElement("div");
+        let iframeContainerDiv1 = document.createElement("div");
+        iframeContainerDiv1.style.width = "302px";
+        iframeContainerDiv1.style.height = "422px";
+        iframeContainerDiv1.style.position = "relative";
+        let iframeContainerDiv2 = document.createElement("div");
+        iframeContainerDiv2.style.width = "302px";
+        iframeContainerDiv2.style.height = "422px";
+        iframeContainerDiv2.style.position = "absolute";
+        let iframe = document.createElement("iframe");
+        iframe.frameBorder = "0";
+        iframe.scrolling = "no";
+        iframe.style.width = "302px";
+        iframe.style.height = "422px";
+        iframe.style.borderStyle = "none";
+        iframe.src = "https://www.google.com/recaptcha/api/noscript?k="+sitekey;
+        iframeContainerDiv2.appendChild(iframe);
+        iframeContainerDiv1.appendChild(iframeContainerDiv2);
+        containerDiv.appendChild(iframeContainerDiv1);
+        let textareaDiv = document.createElement("div");
+        textareaDiv.style.width = "300px";
+        textareaDiv.style.height = "60px";
+        textareaDiv.style.borderStyle = "none";
+        textareaDiv.style.bottom = "12px";
+        textareaDiv.style.left = "25px";
+        textareaDiv.style.margin = "0px";
+        textareaDiv.style.padding = "0px";
+        textareaDiv.style.right = "25px";
+        textareaDiv.style.background = "$f9f9f9";
+        textareaDiv.style.border = "1-x solid #c1c1c1";
+        textareaDiv.style.borderRadius = "3px";
+        let textarea = document.createElement("textarea");
+        textarea.id = "g-recaptcha-response";
+        textarea.name = "g-recaptcha-response";
+        textarea.classList.add("g-recaptcha-response");
+        textarea.style.width = "250px";
+        textarea.style.height = "40px";
+        textarea.style.border = "1px solid $c1c1c1";
+        textarea.style.margin = "10px 25px";
+        textarea.style.padding = "0px";
+        textarea.style.resize = "none";
+        textareaDiv.appendChild(textarea);
+        containerDiv.appendChild(textareaDiv);
+        return containerDiv;
+    }
 }
