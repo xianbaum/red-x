@@ -591,7 +591,7 @@ adapted to be identical to a reddit comment
         iframe.style.width = "302px";
         iframe.style.height = "422px";
         iframe.style.borderStyle = "none";
-        iframe.src = "https://www.google.com/recaptcha/api/noscript?k="+sitekey;
+        iframe.src = "https://www.google.com/recaptcha/api/fallback?k="+sitekey;
         iframeContainerDiv2.appendChild(iframe);
         iframeContainerDiv1.appendChild(iframeContainerDiv2);
         containerDiv.appendChild(iframeContainerDiv1);
