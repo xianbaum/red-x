@@ -50,6 +50,6 @@ export class StorageManager {
             JSON.stringify(StorageManager._lsUser));
     }
     static clearUserAccess(username: string) {
-        localStorage.removeItem(StorageManager.userAccessKey + username)
+        localStorage.removeItem(StorageManager.userAccessKey  + "_" + username)
     }
 }

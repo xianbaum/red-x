@@ -32,8 +32,13 @@ export class ApiRedditComment implements RedditComment {
     get score() {
         return this.adapter.score;
     }
+    private _datePosted?: Date
     get datePosted() {
-        return new Date(this.adapter.created);
+        if(this._datePosted === undefined) {
+            this._datePosted = new Date(0);
+            this._datePosted.setUTCSeconds(this.adapter.created);
+        }
+        return this._datePosted;
     }
     get isEdited() {
         return this.adapter.edited !== false;

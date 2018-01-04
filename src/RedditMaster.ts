@@ -23,13 +23,11 @@ export class RedditMaster {
                 if(DesktopEngine.username === undefined) {
                     throw new TypeError("username is undefined!");
                 }
-                DesktopEngine.hookLogoutButton();
                 let ua = StorageManager.getUserAccess(DesktopEngine.username);
                 if(ua.accessToken == null) {
                     let code = Url.Current.query("code");
                     if(code === undefined) {
-                        if(window.location.href.indexOf(RedditApi.authorizePath) === -1)
-                        {
+                        if(window.location.href.indexOf(RedditApi.authorizePath) === -1) {
                             RedditMaster.requestAccess();                        
                         }
                         reject();

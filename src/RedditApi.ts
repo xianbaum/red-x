@@ -141,12 +141,30 @@ export namespace LinkCommentApi {
             return response;
     });
     }
+    export function getMoreChildren(commaDelimitedChildren: string, linkId: string,  id?: string) {
+        let data: any = {
+            api_type: "json",
+            children: commaDelimitedChildren
+        };
+        if(id !== undefined) {
+            data.id = id;
+        }
+        data.limit_children = false;
+        data.link_id = linkId;
+        data.sort = "confidence";
+        data.raw_json = 1;
+        return Http.get(Helpers.oauthBase+"/api/morechildren"+Http.createQueryString(data), [Helpers.authorizationHeader(), Helpers.userAgent()]).then(
+            (response: JsonResponse<JsonData<ThingsArray<"t1", CommentModel>>>) => {
+                Helpers.exceptOnError(response);
+                return response;
+        })
+    }
 }
 namespace Helpers {
     export const base = "https://www.reddit.com";
     export const oauthBase = "https://oauth.reddit.com";
     export function isError (response: RedditError): response is RedditError {
-        if(response.hasOwnProperty("error")) {
+        if(response === "Error: URI Too Long" || response.hasOwnProperty("error")) {
             return true;
         }
         return false;

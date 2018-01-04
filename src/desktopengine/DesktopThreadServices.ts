@@ -2,6 +2,7 @@ import { DesktopRedditCommentFromElement }  from "./DesktopRedditCommentFromElem
 import { DesktopRedditComment } from "../interfaces/DesktopRedditComment";
 import { RedditElements } from "./RedditElements";
 import { RedditThread } from "../interfaces/RedditThread";
+import { DesktopEngine } from "./DesktopEngine";
 
 export class DesktopThreadServices {
     static processRedditThread() {
@@ -10,7 +11,10 @@ export class DesktopThreadServices {
         for(var i in threads) {
             this.thread = threads[i];
         }
-        RedditElements.hookThreadCommentForm();
+        if(DesktopEngine.isLoggedIn) {
+            RedditElements.hookThreadCommentForm();
+            RedditElements.hookMoreComments();
+        }
     }
     public static addComment(comment: DesktopRedditComment) {
         if(this.comments[comment.id] === undefined) {

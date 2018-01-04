@@ -10,6 +10,7 @@ import {DesktopRedditThreadFromElement} from "./DesktopRedditThreadFromElement";
 import { Votable } from "../interfaces/Votable";
 import {RedditThread} from "../interfaces/RedditThread";
 import { SubredditServices } from "./SubredditServices";
+import { DesktopEngine } from "./DesktopEngine";
 
 export namespace RedditElements {
     export interface HookedCommentElements {
@@ -253,26 +254,6 @@ adapted to be identical to a reddit comment
         parentA.setAttribute("rel", "nofollow");
         parentA.innerText="parent";
         parent.appendChild(parentA);
-        var edit = document.createElement("li");
-        var editA = document.createElement("a");
-        editA.classList.add("edit-usertext");
-        editA.href = "javascript:void(0)";
-        editA.innerText = "edit";
-        edit.appendChild(editA);
-        var deleteEl = document.createElement("li");
-        var deleteElForm = document.createElement("form");
-        deleteElForm.classList.add("toggle", "del-button");
-        // var deleteElFormA = document.createElement("a");
-        // deleteElFormA.classList.add("toglgebutton");
-        // deleteElFormA.href="#";
-        // deleteElFormA.setAttribute("data-event-action", "delete");
-        // deleteElFormA.innerText = "delete";
-        // var deleteSpan = document.createElement("span");
-        // deleteSpan.classList.add("option", "error");
-        // var deleteSpanYes = document.createElement("yes")
-        //lol
-        deleteElForm.innerHTML = '<span class="option main active"><a href="#" class="togglebutton " data-event-action="delete">delete</a></span><span class="option error">are you sure?  <a href="javascript:void(0)" class="yes">yes</a> / <a href="javascript:void(0)" class="no">no</a></span>'
-        deleteEl.appendChild(deleteElForm);
         var reply = document.createElement("li");
         reply.classList.add("reply-button", "login-required");
         var replyA = document.createElement("a");
@@ -282,9 +263,30 @@ adapted to be identical to a reddit comment
         replyA.innerText = "reply";
         reply.appendChild(replyA);
         buttons.appendChild(parent);
-        buttons.appendChild(edit);
-        buttons.appendChild(deleteEl);
-        buttons.appendChild(edit);
+        if (DesktopEngine.username == comment.author) {
+            var edit = document.createElement("li");
+            var editA = document.createElement("a");
+            editA.classList.add("edit-usertext");
+            editA.href = "javascript:void(0)";
+            editA.innerText = "edit";
+            edit.appendChild(editA);
+            var deleteEl = document.createElement("li");
+            var deleteElForm = document.createElement("form");
+            deleteElForm.classList.add("toggle", "del-button");
+            // var deleteElFormA = document.createElement("a");
+            // deleteElFormA.classList.add("toglgebutton");
+            // deleteElFormA.href="#";
+            // deleteElFormA.setAttribute("data-event-action", "delete");
+            // deleteElFormA.innerText = "delete";
+            // var deleteSpan = document.createElement("span");
+            // deleteSpan.classList.add("option", "error");
+            // var deleteSpanYes = document.createElement("yes")
+            //lol
+            deleteElForm.innerHTML = '<span class="option main active"><a href="#" class="togglebutton " data-event-action="delete">delete</a></span><span class="option error">are you sure?  <a href="javascript:void(0)" class="yes">yes</a> / <a href="javascript:void(0)" class="no">no</a></span>'
+            deleteEl.appendChild(deleteElForm);
+            buttons.appendChild(edit);
+            buttons.appendChild(deleteEl);
+        }
         buttons.appendChild(reply);
         entry.appendChild(buttons);
         var child = document.createElement("div");
@@ -322,8 +324,7 @@ adapted to be identical to a reddit comment
         }
     }
     export function hookDesktopCommentElements(commentElement: HTMLDivElement, comment: DesktopRedditComment) {
-        let hookedElements: HookedCommentElements;
-        let voterElement = commentElement.getElementsByClassName("midcol")[0];
+        let hookedElements: any;
         let entryElement = commentElement.getElementsByClassName("entry")[0];
         let deleteToggle = entryElement.getElementsByClassName("del-button")[0];
         let editToggle = entryElement.getElementsByClassName("edit-usertext")[0];
@@ -332,8 +333,6 @@ adapted to be identical to a reddit comment
             replyButton = entryElement.querySelector("[data-event-action=reply]");
         }
         hookedElements = {
-            upvote: <HTMLDivElement>voterElement.getElementsByClassName("arrow")[0] || <HTMLElement>voterElement.getElementsByClassName("upmod")[0],
-            downvote:<HTMLDivElement> voterElement.getElementsByClassName("arrow")[1] || <HTMLElement> voterElement.getElementsByClassName("downmod")[0], 
             reply: <HTMLAnchorElement>replyButton,
             collapse:<HTMLAnchorElement> entryElement.getElementsByClassName("expand")[0],
             deleteToggle: deleteToggle != null ? <HTMLAnchorElement>deleteToggle.getElementsByClassName("togglebutton")[0] : null,
@@ -346,23 +345,10 @@ adapted to be identical to a reddit comment
         hookedElements.collapse.addEventListener("click", () => {
             comment.toggle();
         });
-        if(comment.isDeleted) {
+        if(comment.isDeleted || !DesktopEngine.isLoggedIn) {
             return;
         }
-        hookedElements.upvote.addEventListener("click", () => {
-            if(hookedElements.upvote.classList.contains("upmod")) {
-                comment.vote(0);
-            } else {
-                comment.vote(1);
-            }
-        });
-        hookedElements.downvote.addEventListener("click", () => {
-            if(hookedElements.downvote.classList.contains("downmod")) {
-                comment.vote(0);
-            } else {
-                comment.vote(-1);
-            }
-        });
+        hookVoterElement(commentElement, comment);
         if(hookedElements.reply != null) {
             hookedElements.reply.addEventListener("click", () =>{
                 comment.toggleReplyForm();
@@ -402,6 +388,9 @@ adapted to be identical to a reddit comment
         }
     }
     export function hookVoterElement(element:HTMLElement, comment:Votable) {
+        if(!DesktopEngine.isLoggedIn){
+            return;
+        }
         let voterElement = element.getElementsByClassName("midcol")[0];
         let upvote = voterElement.getElementsByClassName("arrow")[0] || <HTMLElement>voterElement.getElementsByClassName("upmod")[0];
         let downvote = voterElement.getElementsByClassName("arrow")[1] || <HTMLElement> voterElement.getElementsByClassName("downmod")[0];
@@ -557,15 +546,21 @@ adapted to be identical to a reddit comment
         return comments;
     }
     export function hookThreadCommentForm() {
-        let formTextarea = <HTMLTextAreaElement>document.querySelector("div.usertext-edit:nth-child(2) > div:nth-child(1) > textarea:nth-child(1)");
-        let submitButton = <HTMLButtonElement>document.querySelector(".usertext-buttons > button:nth-child(1)");
-        let form = <HTMLFormElement>document.querySelector("form.usertext:nth-child(3)");
+        if(!DesktopEngine.isLoggedIn) {
+            return;
+        }
+        let formTextarea = <HTMLTextAreaElement|null>document.querySelector("div.usertext-edit:nth-child(2) > div:nth-child(1) > textarea:nth-child(1)");
+        let submitButton = <HTMLButtonElement|null>document.querySelector(".usertext-buttons > button:nth-child(1)");
+        let form = <HTMLFormElement|null>document.querySelector("form.usertext:nth-child(3)");
+        if(form == null || submitButton == null || formTextarea == null) {
+            return;
+        }
         form.onsubmit = () => {
-            submitButton.disabled = true;
-            formTextarea.disabled = true;
-            LinkCommentApi.postComment(DesktopThreadServices.thread.fullname, formTextarea.value).then( (commentJson) => {
-                formTextarea.style.display = "none";
-                submitButton.style.display = "none";
+            submitButton!.disabled = true;
+            formTextarea!.disabled = true;
+            LinkCommentApi.postComment(DesktopThreadServices.thread.fullname, formTextarea!.value).then( (commentJson) => {
+                formTextarea!.style.display = "none";
+                submitButton!.style.display = "none";
                 for(var comment of commentJson.json.data.things) {
                     DesktopThreadServices.addComment(new ApiRedditComment(comment.data).toDesktopRedditComment());
                 }
@@ -620,5 +615,47 @@ adapted to be identical to a reddit comment
         textareaDiv.appendChild(textarea);
         containerDiv.appendChild(textareaDiv);
         return containerDiv;
+    }
+    export function hookMoreComments() {
+        let commentdivs = <HTMLCollectionOf<HTMLElement>>document.getElementsByClassName("morechildren");
+        for (let i = 0; i < commentdivs.length; i++) {
+            let commentdiv = commentdivs[i];
+            let span = <HTMLSpanElement>(commentdivs[i].getElementsByClassName("morecomments")[0]);
+            let commentCount = 0;
+            span.firstChild!.addEventListener("click", () => {
+                let click = <string>(<HTMLAnchorElement>span.firstChild!).getAttribute("onclick");
+                let firstI = click.indexOf("'")+1;
+                let secondI = click.indexOf("'", firstI);
+                let thirdI = click.indexOf("'", click.indexOf("'", click.indexOf("'", secondI + 1) + 1) + 1) + 1;
+                let fourthI = click.indexOf("'", thirdI);
+                let linkId = click.substring(firstI, secondI);
+                let allCommaDelimitedComments = click.substring(thirdI, fourthI);
+                let loadingSpan = document.createElement("span");
+                loadingSpan.innerText = "loading";
+                loadingSpan.style.color = "red";
+                span.style.display = "none";
+                commentdiv.appendChild(loadingSpan);
+                let commentsToSend = allCommaDelimitedComments.substr((8)*commentCount,(8)*100-1);
+                LinkCommentApi.getMoreChildren(commentsToSend, linkId).then((children) => {
+                    commentCount += 100;
+                    for(let thing of children.json.data.things) {
+                        DesktopThreadServices.addComment(new ApiRedditComment(thing.data).toDesktopRedditComment());
+                    }
+                    if(allCommaDelimitedComments.substr((8)*commentCount,(8)*100-1) === "") {
+                        commentdiv.parentElement!.removeChild(commentdiv);
+                    } else {
+                        span.style.display = "inline";
+                        commentdiv.removeChild(loadingSpan);
+                        let parent = commentdiv.parentElement;
+                        parent!.removeChild(commentdiv);
+                        parent!.appendChild(commentdiv);
+                        let gray = <HTMLSpanElement>commentdiv.getElementsByClassName("gray")[0];
+                        let numberOfComments = +(gray.innerText.substring(gray.innerText.indexOf("(")+1,
+                            gray.innerText.indexOf(" ", gray.innerText.indexOf("("))));
+                        gray.innerText = " ("+(numberOfComments-100 < 0 ? 0 : numberOfComments - 100) + " replies)";
+                    }
+                });
+            });
+        }
     }
 }

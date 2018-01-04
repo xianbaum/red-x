@@ -7,6 +7,7 @@ import {SubredditServices} from "./SubredditServices";
 import {LoginServices} from "./LoginServices";
 
 export enum PageType {
+    Unknown,
     Front,
     Subreddit,
     Thread,
@@ -14,41 +15,58 @@ export enum PageType {
     Search,
     Gilded,
     User,
-    Messages
+    Messages,
+    Login
 }
 
 export class DesktopEngine  {
     private url: Url;
-    public pageType: PageType;
+    private _pageType?: PageType;
+    public get pageType(): PageType {
+        if(this._pageType === undefined) {
+            if(this.pageIsThread)
+                this._pageType = PageType.Thread;
+            if(this.pageIsUser)
+                this._pageType =  PageType.User;
+            if(this.pageIsMessages)
+                this._pageType =  PageType.Messages;
+            if(this.pageIsFrontPage)
+                this._pageType =  PageType.Front;
+            if(this.pageIsSubreddit)
+                this._pageType =  PageType.Subreddit;
+            if(this.pageIsLogin)
+                this._pageType = PageType.Login;
+            if(this._pageType === undefined) {
+                this._pageType = PageType.Unknown;
+            }
+        }
+        return this._pageType;
+    }
     private threadServices: DesktopThreadServices;
     constructor() {
         this.url = new Url(window.location.href);
-        if(this.pageIsThread) {
-            this.pageType = PageType.Thread;
-            this.threadServices = new DesktopThreadServices();
-            if(DesktopEngine.isLoggedIn) {
+        DesktopEngine.hookLogoutButton();
+        switch(this.pageType) {
+            case PageType.Thread:
+                this.threadServices = new DesktopThreadServices();
                 DesktopThreadServices.processRedditThread();
-            }
-        } else if(this.pageIsUser) {
-            this.pageType = PageType.User;
-            if(DesktopEngine.isLoggedIn) {
+                break;
+            case PageType.User:
                 DesktopUserPageServices.processUserPage();
-            }
-        } else if(this.pageIsMessages) {
-            this.pageType = PageType.Messages;
-            if(DesktopEngine.isLoggedIn) {
+                break;
+            case PageType.Messages:
                 DesktopMessagesServices.processMessagesPage();
-            }
-        } else if(this.pageIsFrontPage || this.pageIsSubreddit) {
-            if(DesktopEngine.isLoggedIn) {
+                break;
+            case PageType.Front:
+            case PageType.Subreddit:
                 SubredditServices.init();
-            }
-        } else if(this.pageIsSubmit) {
-            if(DesktopEngine.isLoggedIn) {
+                break;
+            case PageType.Submit:
                 new SubmitServices().initSubmitPage();
-            }
-        } else if(this.pageIsLogin) {
-            LoginServices.addRecaptcha();
+                break;
+            case PageType.Login:
+                LoginServices.addRecaptcha();
+                break;
         }
     }
     private get subredditName() {
@@ -129,9 +147,11 @@ export class DesktopEngine  {
         }
     }
     public static hookLogoutButton() {
-        let logoutButton = (<HTMLFormElement> document.getElementsByClassName("logout")[0]);
-        logoutButton.onclick = () => {
-            logoutButton.submit();
-        }
+        try {
+            let logoutButton = (<HTMLFormElement> document.getElementsByClassName("logout")[0]);
+            logoutButton.onclick = () => {
+                logoutButton.submit();
+            }
+        } catch {}
     }
 }
