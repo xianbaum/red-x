@@ -26,19 +26,20 @@ export class DesktopEngine  {
         if(this._pageType === undefined) {
             if(this.pageIsThread)
                 this._pageType = PageType.Thread;
-            if(this.pageIsUser)
+            else if(this.pageIsUser)
                 this._pageType =  PageType.User;
-            if(this.pageIsMessages)
+            else if(this.pageIsMessages)
                 this._pageType =  PageType.Messages;
-            if(this.pageIsFrontPage)
+            else if(this.pageIsFrontPage)
                 this._pageType =  PageType.Front;
-            if(this.pageIsSubreddit)
+            else if(this.pageIsSubreddit)
                 this._pageType =  PageType.Subreddit;
-            if(this.pageIsLogin)
+            else if(this.pageIsLogin)
                 this._pageType = PageType.Login;
-            if(this._pageType === undefined) {
+            else if(this.pageIsSubmit)
+                this._pageType = PageType.Submit;
+            else if(this._pageType === undefined)
                 this._pageType = PageType.Unknown;
-            }
         }
         return this._pageType;
     }
