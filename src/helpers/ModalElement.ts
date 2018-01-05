@@ -93,6 +93,9 @@ export class ModalElement {
         }
         return this;
     }
+    onButtonClick<T>(index: number, method: () => T) {
+        return method();
+    }
     public get isOpened() {
         return document.body.contains(this.element);
     }

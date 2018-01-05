@@ -72,13 +72,20 @@ export namespace LinkCommentApi {
             api_type: "json",
             raw_json: 1
         };
-        return Http.post(Helpers.oauthBase+"/api/comment",
+        return new Promise<JsonResponse<JsonData<ThingsArray<"t1", CommentModel>>>>((resolve, reject) => {
+            Http.post(Helpers.oauthBase+"/api/comment",
             comment,
             [Helpers.authorizationHeader(), Helpers.userAgent(), Helpers.xWwwFormUrlEncodedContentType()],
             true).then((response: JsonResponse<JsonData<ThingsArray<"t1", CommentModel>>>) => {
-                Helpers.exceptOnError(response);
-                return response;
+                if(!Helpers.exceptOnError(response, () => {
+                    postComment(parentId, text).then((response) => {
+                        resolve(response)
+                    }, reject);
+                }, reject)) {
+                    resolve(response);
+                }
             });
+        })
     }
     export function vote(fullname: string, dir: -1 | 0 | 1)  {
         let data = {
@@ -86,21 +93,37 @@ export namespace LinkCommentApi {
             id: fullname,
             rank: 2
         }
-        return Http.post(Helpers.oauthBase+"/api/vote", data,
-        [Helpers.authorizationHeader(), Helpers.userAgent(), Helpers.xWwwFormUrlEncodedContentType()],
-        true).then((response: {} ) => {
-            Helpers.exceptOnError(response);
+        return new Promise((resolve, reject) => {
+            Http.post(Helpers.oauthBase+"/api/vote", data,
+            [Helpers.authorizationHeader(), Helpers.userAgent(), Helpers.xWwwFormUrlEncodedContentType()],
+            true).then((response: {} ) => {
+                if(!Helpers.exceptOnError(response, () => {
+                    vote(fullname, dir).then((response: {}) =>{
+                        resolve(response);
+                    });
+                }, reject)) {
+                    resolve(response);
+                }
+            });
         });
     }
     export function deleteThing(fullname: string) {
         let data = {
             id: fullname
         };
-        return Http.post(Helpers.oauthBase+"/api/del", data,
-        [Helpers.authorizationHeader(), Helpers.userAgent(), Helpers.xWwwFormUrlEncodedContentType()],
-        true).then((response: {} ) => {
-            Helpers.exceptOnError(response);  
-        });
+        return new Promise<{}>((resolve, reject) => {
+                Http.post(Helpers.oauthBase + "/api/del", data,
+                [Helpers.authorizationHeader(), Helpers.userAgent(), Helpers.xWwwFormUrlEncodedContentType()],
+                true).then((response: {}) => {
+                    if(!Helpers.exceptOnError(response, () => {
+                        deleteThing(fullname).then((response) => {
+                            resolve(response);
+                        }, reject);
+                    }, reject)) {
+                        resolve(response);
+                    }
+                })
+        })
     }
     export function editPost(fullname: string, text: string) {
         let data = {
@@ -110,12 +133,19 @@ export namespace LinkCommentApi {
             thing_id: fullname,
             raw_json: 1
         };
-        return Http.post(Helpers.oauthBase+"/api/editusertext", data,
+        return new Promise<JsonResponse<JsonData<ThingsArray<"t1", CommentModel>>>>((resolve, reject) => {
+            Http.post(Helpers.oauthBase+"/api/editusertext", data,
             [Helpers.authorizationHeader(), Helpers.userAgent(), Helpers.xWwwFormUrlEncodedContentType()],
             true).then((response: JsonResponse<JsonData<ThingsArray<"t1", CommentModel>>>) => {
-                Helpers.exceptOnError(response);
-                return response;
+                if(!Helpers.exceptOnError(response, () => {
+                    editPost(fullname, text).then((response) => {
+                        resolve(response)
+                    }, reject);
+                }, reject)) {
+                    resolve(response);
+                }
         });
+        })
     }
     export function submitPost(kind: "self" | "link", title: string, linkOrText: string, subreddit: string) {
         let data: any = {
@@ -133,13 +163,20 @@ export namespace LinkCommentApi {
         } else {
             data.url = linkOrText;
         }
-        return Http.post(Helpers.oauthBase+"/api/submit", data,
-        [Helpers.authorizationHeader(), Helpers.userAgent(), Helpers.xWwwFormUrlEncodedContentType()],
-        true).then((response: any) => {
-            console.log(response);
-            Helpers.exceptOnError(response);
-            return response;
-    });
+        return new Promise<any>((resolve, reject) => {
+            Http.post(Helpers.oauthBase+"/api/submit", data,
+            [Helpers.authorizationHeader(), Helpers.userAgent(), Helpers.xWwwFormUrlEncodedContentType()],
+            true).then((response: any) => {
+                console.log(response);
+                if(!Helpers.exceptOnError(response, () => {
+                    submitPost(kind, title, linkOrText, subreddit).then((response) => {
+                        resolve(response)
+                    }, reject);
+                }, reject)) {
+                    resolve(response);
+                }
+            });
+        });
     }
     export function getMoreChildren(commaDelimitedChildren: string, linkId: string,  id?: string) {
         let data: any = {
@@ -153,11 +190,18 @@ export namespace LinkCommentApi {
         data.link_id = linkId;
         data.sort = "confidence";
         data.raw_json = 1;
-        return Http.get(Helpers.oauthBase+"/api/morechildren"+Http.createQueryString(data), [Helpers.authorizationHeader(), Helpers.userAgent()]).then(
+        return new Promise<JsonResponse<JsonData<ThingsArray<"t1", CommentModel>>>>((resolve, reject) => {
+            Http.get(Helpers.oauthBase+"/api/morechildren"+Http.createQueryString(data), [Helpers.authorizationHeader(), Helpers.userAgent()]).then(
             (response: JsonResponse<JsonData<ThingsArray<"t1", CommentModel>>>) => {
-                Helpers.exceptOnError(response);
-                return response;
-        })
+                if(!Helpers.exceptOnError(response, () => {
+                    getMoreChildren(commaDelimitedChildren, linkId, id).then((response) =>{
+                        resolve(response);
+                    }, reject);
+                }, reject)) {
+                    resolve(response);
+                }
+            })
+        });
     }
 }
 namespace Helpers {
@@ -172,13 +216,15 @@ namespace Helpers {
     export function errorToString(e: RedditError) {
         return e.error +  (e.message !== undefined ? ": "+ e.message : "");
     }
-    export function exceptOnError(response: any) {
+    export function exceptOnError(response: any, oldMethod?: () => void, reject?: (reason?: any) => void) {
         if(Helpers.isError(response)) {
             if(response.error === 401) {
-                RedditMaster.reRequestAccess();
+                RedditMaster.reRequestAccess(oldMethod, reject);
+                return true;
             }
             throw new RedditValiationError(Helpers.errorToString(response));
         }
+        return false;
     }
     export function returnExceptOnError(response: any) {
         Helpers.exceptOnError(response);

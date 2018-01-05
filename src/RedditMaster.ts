@@ -6,13 +6,24 @@ import { DesktopEngine } from "./desktopengine/DesktopEngine"
 export class RedditMaster {
     private static requestAccess() {
         Modal.createYesNo("red-x requires permission from your reddit account. Would you like to grant permissions now?", () => {
-            window.location.href = RedditApi.authorizeUrl();
+            window.open(RedditApi.authorizeUrl(), "_blank");
         }).open();
     }
-    public static reRequestAccess() {
+    public static reRequestAccess(oldMethod?: () => void, reject?: (reason?: any) => void) {
         StorageManager.clearUserAccess(<string>DesktopEngine.username);
         Modal.createYesNo("red-x got unauthorized (I'm not sure why this happens). Would you like to grant permissions now?", () => {
-            window.location.href = RedditApi.authorizeUrl();
+            window.open(RedditApi.authorizeUrl(), "_blank");
+            if(oldMethod != null && reject != null) {
+                Modal.createYesNo("Would you like to retry the current operation (do this after granting permission)", () => {
+                    oldMethod();
+                }, () => {
+                    reject("User did not choose to retry")
+                }).open();
+            }
+        }, () => {
+            if(reject != null) {
+                reject("User did not request access")
+            }
         }).open();
     }
     static verifyCode(): Promise<void> {
