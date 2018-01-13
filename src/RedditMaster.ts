@@ -44,13 +44,25 @@ export class RedditMaster {
                         reject();
                     } else {
                         RedditApi.getAccessToken(code).then((result) => {
-                            ua.accessToken = result.access_token
+                            ua.accessToken = result.access_token;
+                            ua.refreshToken = result.refresh_token;
+                            ua.expirationUTC = Math.floor(Date.now()/1000) + result.expires_in;
                             StorageManager.saveUserAccess(ua, <string>DesktopEngine.username);
                             resolve();
                         }, (reason) => {
                             Modal.createToast("Could not verify code: "+reason).open();
                         });
                     }
+                } else if(ua.expirationUTC != null && ua.refreshToken != null && Date.now() + 60000 /*1 minute from now*/ > ua.expirationUTC) {
+                    RedditApi.refreshAccessToken(ua.refreshToken).then((result) => {
+                        ua.accessToken = result.access_token;
+                        ua.refreshToken = result.refresh_token;
+                        ua.expirationUTC = Math.floor(Date.now()/1000) + result.expires_in;
+                        StorageManager.saveUserAccess(ua, <string>DesktopEngine.username);
+                        resolve();
+                    }, (reason: any) => {
+                        Modal.createToast("Could not verify code: "+reason).open();
+                    });
                 } else {
                     resolve();
                 }

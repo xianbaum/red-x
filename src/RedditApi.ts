@@ -278,6 +278,14 @@ export namespace RedditApi {
              new ResponseHeader("Content-Type", "application/x-www-form-urlencoded")]
         ).then(Helpers.returnExceptOnError);
     }
+    export function refreshAccessToken(refreshToken: string) {
+        return Http.post(Helpers.base+"/api/v1/access_token",
+            "grant_type=refresh_token&refresh_token="+refreshToken,
+            [new ResponseHeader("Authorization", "Basic "+btoa(RedditApi.clientId+":")),
+            Helpers.userAgent(),
+            new ResponseHeader("Content-Type", "application/x-www-form-urlencoded")]
+        ).then(Helpers.returnExceptOnError);
+    }
 }
 
 //uncomment for testing api

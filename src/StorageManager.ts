@@ -10,6 +10,8 @@ export class UserAccess {
         this.accessToken = null;
     }
     accessToken: string | null;
+    refreshToken: string | null;
+    expirationUTC: number | null; 
 }
 
 export class StorageManager {
