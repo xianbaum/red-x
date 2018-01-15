@@ -13,7 +13,7 @@ export class DesktopRedditCommentFromElement implements RedditComment, RedditCom
         }) 
     }
     toggleReplyForm() {
-        RedditElements.toggleReplyForm(this.element, this.fullname);
+        RedditElements.toggleCommentReplyForm(this.element, this.fullname);
     }
     submitReply() {
 

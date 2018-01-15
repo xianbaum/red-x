@@ -3,11 +3,16 @@ import { DesktopRedditComment } from "../interfaces/DesktopRedditComment";
 import { RedditElements } from "./RedditElements";
 import { RedditThread } from "../interfaces/RedditThread";
 import { DesktopEngine } from "./DesktopEngine";
+import { DesktopRedditThreadFromElement } from "./DesktopRedditThreadFromElement";
 
 export class DesktopThreadServices {
     static processRedditThread() {
-        this.comments = RedditElements.generateCommentList();
-        let threads = RedditElements.generateLinkList();
+        this.comments = 
+            RedditElements.generateListOf<DesktopRedditCommentFromElement>("comment",
+                DesktopRedditCommentFromElement);
+        let threads = 
+            RedditElements.generateListOf<DesktopRedditThreadFromElement>("link",
+                DesktopRedditThreadFromElement);
         for(var i in threads) {
             this.thread = threads[i];
         }

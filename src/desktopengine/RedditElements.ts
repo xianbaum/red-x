@@ -11,6 +11,10 @@ import { Votable } from "../interfaces/Votable";
 import {RedditThread} from "../interfaces/RedditThread";
 import { SubredditServices } from "./SubredditServices";
 import { DesktopEngine } from "./DesktopEngine";
+import { Thingable } from "../interfaces/Thingable";
+import { Usertext } from "../interfaces/Usertext";
+import { DesktopMessageFromElement } from "./DesktopMessageFromElement";
+import { RedditMessage } from "../interfaces/RedditMessage";
 
 export namespace RedditElements {
     export interface HookedCommentElements {
@@ -43,6 +47,23 @@ Adapted to look similarly to this from reddit:
 </form>
 */
     export function generateCommentForm(parentId: string) {
+        let formAndTextarea = generateGenericForm()
+        let form = formAndTextarea.form;
+        let textarea = formAndTextarea.textarea;
+        form.onsubmit = () =>{
+            LinkCommentApi.postComment(parentId, textarea.value).then((commentJson) => {
+                for(var comment of commentJson.json.data.things) {
+                    DesktopThreadServices.addComment(new ApiRedditComment(comment.data).toDesktopRedditComment());
+                }
+                if(form.parentNode != null){
+                    form.parentNode.removeChild(form);
+                }
+            });
+            return false;
+        };
+        return form;
+    }
+    export function generateGenericForm() {
         let form = document.createElement("form");
         form.classList.add("usertext")
         form.action = "";
@@ -81,18 +102,7 @@ Adapted to look similarly to this from reddit:
         container.appendChild(top);
         container.appendChild(bottom);
         form.appendChild(container);
-        form.onsubmit = () =>{
-            LinkCommentApi.postComment(parentId, textarea.value).then((commentJson) => {
-                for(var comment of commentJson.json.data.things) {
-                    DesktopThreadServices.addComment(new ApiRedditComment(comment.data).toDesktopRedditComment());
-                }
-                if(form.parentNode != null){
-                    form.parentNode.removeChild(form);
-                }
-            });
-            return false;
-        };
-        return form;
+        return { form, textarea};
     }
 /*
 adapted to be identical to a reddit comment
@@ -307,7 +317,30 @@ adapted to be identical to a reddit comment
             element.classList.remove("noncollapsed");
         }
     }
-    export function toggleReplyForm(element: HTMLDivElement, fullname: string) {
+    export function toggleNew(element: HTMLDivElement) {
+        if(element.classList.contains("m-collapsed")) {
+            element.classList.remove("m-collapsed");
+        } else {
+            element.classList.add("m-collapsed");
+        }
+    }
+    export function toggleCommentReplyForm(element: HTMLDivElement, fullname: string) {
+        var child = element.getElementsByClassName("child")[0];
+        var childsChild : Element | undefined = child.children[0];
+        if(childsChild !== undefined && childsChild.tagName.toUpperCase() === "FORM") {
+            /*remove*/
+            child.removeChild(childsChild);
+        } else {
+            /*add*/
+            let formToAdd = RedditElements.generateCommentForm(fullname);
+            if(childsChild === undefined) {
+                child.appendChild(formToAdd);
+            } else { /* first tagname is not form */
+                child.insertBefore(formToAdd, childsChild);
+            }
+        }
+    }
+    export function toggleMessageReplyForm(element: HTMLDivElement, fullname: string) {
         var child = element.getElementsByClassName("child")[0];
         var childsChild : Element | undefined = child.children[0];
         if(childsChild !== undefined && childsChild.tagName.toUpperCase() === "FORM") {
@@ -324,23 +357,14 @@ adapted to be identical to a reddit comment
         }
     }
     export function hookDesktopCommentElements(commentElement: HTMLDivElement, comment: DesktopRedditComment) {
-        let hookedElements: any;
         let entryElement = commentElement.getElementsByClassName("entry")[0];
-        let deleteToggle = entryElement.getElementsByClassName("del-button")[0];
-        let editToggle = entryElement.getElementsByClassName("edit-usertext")[0];
         let replyButton: Element | null = entryElement.getElementsByClassName("reply-button")[0];
         if(replyButton == null) {
             replyButton = entryElement.querySelector("[data-event-action=reply]");
         }
-        hookedElements = {
+        let hookedElements = {
             reply: <HTMLAnchorElement>replyButton,
             collapse:<HTMLAnchorElement> entryElement.getElementsByClassName("expand")[0],
-            deleteToggle: deleteToggle != null ? <HTMLAnchorElement>deleteToggle.getElementsByClassName("togglebutton")[0] : null,
-            deleteYes: deleteToggle != null ? <HTMLAnchorElement>deleteToggle.getElementsByClassName("yes")[0] : null,
-            deleteNo: deleteToggle != null ? <HTMLAnchorElement>deleteToggle.getElementsByClassName("no")[0] : null,
-            editToggle: editToggle != null ? <HTMLAnchorElement>editToggle : null,
-            editForm: editToggle != null ? <HTMLFormElement>entryElement.getElementsByTagName("form")[0] : null,
-            editCancel: editToggle != null ? <HTMLButtonElement>entryElement.getElementsByClassName("cancel")[0] : null
         };
         hookedElements.collapse.addEventListener("click", () => {
             comment.toggle();
@@ -349,44 +373,110 @@ adapted to be identical to a reddit comment
             return;
         }
         hookVoterElement(commentElement, comment);
+        hookDeleteButton(commentElement, comment);
+        hookEditButton(commentElement, comment);
         if(hookedElements.reply != null) {
             hookedElements.reply.addEventListener("click", () =>{
                 comment.toggleReplyForm();
             });
         }
-        if(hookedElements.deleteToggle != null && hookedElements.deleteYes != null && hookedElements.deleteNo != null) {
-            hookedElements.deleteToggle.href = "javascript:void(0)";                
-            hookedElements.deleteToggle.addEventListener("click", () => {
-                RedditElements.toggleDeleteElements(commentElement, true);
+    }
+    export function hookMessageElements(messageElement: HTMLDivElement, message: RedditMessage) {
+        hookDeleteButton(messageElement, message);
+    }
+    export function hookRedditThreadElements(threadElement: HTMLDivElement, thread: RedditThread) {
+        hookVoterElement(threadElement, thread);
+        hookDeleteButton(threadElement, thread);
+        hookEditButton(threadElement, thread);
+    }
+    export function hookDeleteButton(element: HTMLDivElement, comment: Thingable) {
+        let deleteButton = element.getElementsByClassName("del-button")[0];
+        let deleteToggleButton =deleteButton != null ? <HTMLAnchorElement>deleteButton.getElementsByClassName("togglebutton")[0] : null;
+        let deleteYes = deleteButton != null ? <HTMLAnchorElement>deleteButton.getElementsByClassName("yes")[0] : null;
+        let deleteNo = deleteButton != null ? <HTMLAnchorElement>deleteButton.getElementsByClassName("no")[0] : null;
+        if(deleteToggleButton != null && deleteYes != null && deleteNo != null) {
+            deleteToggleButton.href = "javascript:void(0)";
+            deleteToggleButton.addEventListener("click", () => {
+                RedditElements.toggleDeleteElements(element, true);
             });
-            hookedElements.deleteNo.addEventListener("click", () => {
-                RedditElements.toggleDeleteElements(commentElement, false);
+            deleteNo.addEventListener("click", () => {
+                RedditElements.toggleDeleteElements(element, false);
             });
-            hookedElements.deleteYes.addEventListener("click", () => {
+            deleteYes.addEventListener("click", () => {
                 LinkCommentApi.deleteThing(comment.fullname).then(() => {
-                    RedditElements.deleteElement(commentElement);                    
+                    RedditElements.deleteElement(element);                    
                 })
             });
-            if(hookedElements.editCancel != null && hookedElements.editForm != null && hookedElements.editToggle != null) {
-                hookedElements.editToggle.addEventListener("click", () => {
-                    RedditElements.toggleEditElement(commentElement);
-                });
-                hookedElements.editCancel.addEventListener("click", () => {
-                    RedditElements.toggleEditElement(commentElement, false);
-                });
-                hookedElements.editForm.onsubmit = () => {
-                    LinkCommentApi.editPost(comment.fullname, entryElement.getElementsByTagName("textarea")[0].value).then((response) =>{
-                        entryElement.getElementsByClassName("usertext-body")[0].innerHTML =
-                            response.json.data.things[0].data.body_html;
-                        comment.body = response.json.data.things[0].data.body;
-                        comment.bodyHtml = response.json.data.things[0].data.body_html;
-                        RedditElements.toggleEditElement(commentElement, false);
-                    })
-                    return false;
-                }
+        }
+    }
+    export function hookEditButton(element: HTMLDivElement, comment: Usertext) {
+        let entryElement = element.getElementsByClassName("entry")[0];
+        let editToggle = element.getElementsByClassName("edit-usertext")[0];
+        let editForm = editToggle != null ? <HTMLFormElement>entryElement.getElementsByTagName("form")[0] : null;
+        let editCancel = editToggle != null ? <HTMLButtonElement>entryElement.getElementsByClassName("cancel")[0] : null;
+        if (editCancel != null && editForm != null && editToggle != null) {
+            editToggle.addEventListener("click", () => {
+                RedditElements.toggleEditElement(element);
+            });
+            editCancel.addEventListener("click", () => {
+                RedditElements.toggleEditElement(element, false);
+            });
+            editForm.onsubmit = () => {
+                LinkCommentApi.editPost(comment.fullname, entryElement.getElementsByTagName("textarea")[0].value).then((response) => {
+                    entryElement.getElementsByClassName("usertext-body")[0].innerHTML =
+                        response.json.data.things[0].data.body_html;
+                    comment.body = response.json.data.things[0].data.body;
+                    comment.bodyHtml = response.json.data.things[0].data.body_html;
+                    RedditElements.toggleEditElement(element, false);
+                })
+                return false;
             }
         }
     }
+    export function hookNewDesktopCommentElements(commentElement: HTMLDivElement, comment: DesktopRedditComment) {
+        let headerElement = commentElement.getElementsByClassName("Comment__header")[0];
+        let bodyElement = commentElement.getElementsByClassName("Comment__body ")[0];
+        let flatListItems = (<NodeListOf<HTMLAnchorElement>>(commentElement.getElementsByClassName("Comment_FlatList")[0].getElementsByClassName("CommentFlastList__item")));
+        let saveButton: HTMLAnchorElement | undefined;
+        let editButton: HTMLAnchorElement | undefined;
+        let deleteButton: HTMLAnchorElement | undefined;
+        let replyButton: HTMLAnchorElement | undefined;
+        let collapseButton = commentElement.getElementsByClassName("Comment__toggle")[0];
+        for(let item of flatListItems) {
+            if(item.innerText === "save") {
+                saveButton = item;
+            } else if(item.innerText === "coment edit") {
+                editButton = item;
+            } else if(item.innerText === "delete") {
+                deleteButton = item;
+            } else if(item.innerText === "reply") {
+                replyButton = item;
+            }
+        }
+        collapseButton.addEventListener("click", () => {
+            comment.toggle();
+        });
+        if(comment.isDeleted || !DesktopEngine.isLoggedIn) {
+            return;
+        }
+        hookVoterElement(commentElement, comment);
+        if(replyButton != null) {
+            replyButton.addEventListener("click", () =>{
+                comment.toggleReplyForm();
+            });
+        }
+        if(deleteButton != null) {
+            LinkCommentApi.deleteThing(comment.fullname).then(() => {
+                RedditElements.deleteElement(commentElement);
+            });
+        }
+        if(editButton != null) {
+            
+        }
+    }
+    // export function toggleNewEditForm(element: HTMLElement, comment: DesktopRedditComment) {
+    //     if(element.getElementsByTagName("Comment__"))
+    // }
     export function hookVoterElement(element:HTMLElement, comment:Votable) {
         if(!DesktopEngine.isLoggedIn){
             return;
@@ -403,6 +493,28 @@ adapted to be identical to a reddit comment
         });
         downvote.addEventListener("click", () => {
             if(downvote.classList.contains("downmod")) {
+                comment.vote(0);
+            } else {
+                comment.vote(-1);
+            }
+        });
+    }
+    export function hookNewVoterCommentElement(element:HTMLElement, comment:Votable) {
+        if(!DesktopEngine.isLoggedIn){
+            return;
+        }
+        let voterElement = element.getElementsByClassName("Comment__votes")[0];
+        let upvote = voterElement.getElementsByClassName("Comment_upVote")[0];
+        let downvote = voterElement.getElementsByClassName("Comment_downVote")[0];
+        upvote.addEventListener("click", () => {
+            if((<HTMLElement>upvote.firstChild).classList.contains("m-downvoted")) {
+                comment.vote(0);
+            } else {
+                comment.vote(1);
+            }
+        });
+        downvote.addEventListener("click", () => {
+            if((<HTMLElement>upvote.firstChild).classList.contains("m-upvoted")) {
                 comment.vote(0);
             } else {
                 comment.vote(-1);
@@ -523,25 +635,14 @@ adapted to be identical to a reddit comment
             }
         }
     }
-    export function generateCommentList(was?: boolean) {
-        let selector = was ? "was-comment" : "comment";
+    export function generateListOf<T extends Thingable>(selector: string, type: { new(element: HTMLDivElement): T ;}) {
         let elements: HTMLCollectionOf<HTMLDivElement> = <HTMLCollectionOf<HTMLDivElement>>document.getElementsByClassName(selector);
-        let comments: Dictionary<DesktopRedditComment> = {};        
+        let comments: Dictionary<T> = {};        
         for(let i = 0; i < elements.length; i++) {
-            let comment = new DesktopRedditCommentFromElement(elements[i]);
-            if(!comment.isDeleted) {
+            let comment = new type(elements[i]);
+            if(!(<any>comment).isDeleted) { //bad
                 comments[comment.id] = comment;
             }
-        }
-        return comments;
-    }
-    export function generateLinkList(was?: boolean) {
-        let selector = was ? "was-link" : "link";
-        let elements: HTMLCollectionOf<HTMLDivElement> = <HTMLCollectionOf<HTMLDivElement>>document.getElementsByClassName(selector);
-        let comments: Dictionary<RedditThread> = {};        
-        for(let i = 0; i < elements.length; i++) {
-            let comment = new DesktopRedditThreadFromElement(elements[i]);
-            comments[comment.fullname] = comment;
         }
         return comments;
     }

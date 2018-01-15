@@ -1,25 +1,7 @@
-import { RedditThread } from "../interfaces/RedditThread";
-import { LinkCommentApi } from "../RedditApi";
-import {RedditElements } from "./RedditElements";
-export class DesktopRedditThreadFromElement implements RedditThread {
-    vote(dir: -1 | 0 | 1) {
-        LinkCommentApi.vote(this.fullname, dir).then(() => {
-            if(dir == 1)  {
-                RedditElements.upvoteElement(this.element);
-            } else if(dir == 0) {
-                RedditElements.unvoteElement(this.element);
-            } else {
-                RedditElements.downvoteElement(this.element);
-            }
-        })
-    }
-    delete() {
+import { RedditMessage } from "../interfaces/RedditMessage";
+import { RedditElements } from "./RedditElements";
 
-    }
-    constructor(element: HTMLDivElement) {
-        this.element = element;
-        RedditElements.hookRedditThreadElements(this.element, this);
-    }
+export class DesktopMessageFromElement implements RedditMessage {
     public get id() {
         return this.fullname.substring(3, this.fullname.length);
     }
@@ -53,6 +35,12 @@ export class DesktopRedditThreadFromElement implements RedditThread {
     }
     set bodyHtml(value) {
         this._bodyHtml = value;
+    }
+    toggleReplyForm() {
+        RedditElements.toggleCommentReplyForm(this.element, this.fullname);
+    }
+    constructor(element: HTMLDivElement) {
+        
     }
     public element: HTMLDivElement;
 }

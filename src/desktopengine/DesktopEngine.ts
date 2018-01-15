@@ -142,7 +142,7 @@ export class DesktopEngine  {
     }
     public static get username() {
         try {
-            return (<HTMLElement>document.getElementsByClassName("user")[0]).innerText.substr(0,(<HTMLElement>document.getElementsByClassName("user")[0]).innerText.indexOf("(") - 1);
+            return (<HTMLElement>document.getElementsByClassName("user")[0]).innerText.substr(0,(<HTMLElement>document.getElementsByClassName("user")[0]).innerText.indexOf("(") - 1).toLowerCase();
         } catch {
             return undefined;
         }

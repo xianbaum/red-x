@@ -1,7 +1,10 @@
 import { CommentModel } from "../redditapimodels/Comment";
+import { Usertext } from "./Usertext";
+import { Thingable } from "./Thingable";
+
 export type RedditComment = RedditCommentProperties;
 
-export interface RedditCommentProperties {
+export interface RedditCommentProperties extends Thingable, Usertext {
     body: string;
     readonly author: string;
     readonly id: string;

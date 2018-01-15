@@ -101,7 +101,7 @@ class DesktopRedditCommentFromApi implements DesktopRedditComment  {
         RedditElements.toggle(this.element);
     }
     toggleReplyForm() {
-        RedditElements.toggleReplyForm(this.element, this.fullname);
+        RedditElements.toggleCommentReplyForm(this.element, this.fullname);
     }
     element: HTMLDivElement;        
     constructor(apiComment: ApiRedditComment) {
