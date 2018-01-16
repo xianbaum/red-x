@@ -21,7 +21,7 @@ export class DesktopThreadServices {
             RedditElements.hookMoreComments();
         }
     }
-    public static addComment(comment: DesktopRedditComment) {
+    public static addThingable(comment: DesktopRedditComment) {
         if(this.comments[comment.id] === undefined) {
             this.comments[comment.id] = comment;
         }

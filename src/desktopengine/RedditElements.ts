@@ -53,7 +53,7 @@ Adapted to look similarly to this from reddit:
         form.onsubmit = () =>{
             LinkCommentApi.postComment(parentId, textarea.value).then((commentJson) => {
                 for(var comment of commentJson.json.data.things) {
-                    DesktopThreadServices.addComment(new ApiRedditComment(comment.data).toDesktopRedditComment());
+                    DesktopThreadServices.addThingable(new ApiRedditComment(comment.data).toDesktopRedditComment());
                 }
                 if(form.parentNode != null){
                     form.parentNode.removeChild(form);
@@ -663,7 +663,7 @@ adapted to be identical to a reddit comment
                 formTextarea!.style.display = "none";
                 submitButton!.style.display = "none";
                 for(var comment of commentJson.json.data.things) {
-                    DesktopThreadServices.addComment(new ApiRedditComment(comment.data).toDesktopRedditComment());
+                    DesktopThreadServices.addThingable(new ApiRedditComment(comment.data).toDesktopRedditComment());
                 }
             });
             return false;
@@ -720,43 +720,46 @@ adapted to be identical to a reddit comment
     export function hookMoreComments() {
         let commentdivs = <HTMLCollectionOf<HTMLElement>>document.getElementsByClassName("morechildren");
         for (let i = 0; i < commentdivs.length; i++) {
-            let commentdiv = commentdivs[i];
-            let span = <HTMLSpanElement>(commentdivs[i].getElementsByClassName("morecomments")[0]);
-            let commentCount = 0;
-            span.firstChild!.addEventListener("click", () => {
-                let click = <string>(<HTMLAnchorElement>span.firstChild!).getAttribute("onclick");
-                let firstI = click.indexOf("'")+1;
-                let secondI = click.indexOf("'", firstI);
-                let thirdI = click.indexOf("'", click.indexOf("'", click.indexOf("'", secondI + 1) + 1) + 1) + 1;
-                let fourthI = click.indexOf("'", thirdI);
-                let linkId = click.substring(firstI, secondI);
-                let allCommaDelimitedComments = click.substring(thirdI, fourthI);
-                let loadingSpan = document.createElement("span");
-                loadingSpan.innerText = "loading";
-                loadingSpan.style.color = "red";
-                span.style.display = "none";
-                commentdiv.appendChild(loadingSpan);
-                let commentsToSend = allCommaDelimitedComments.substr((8)*commentCount,(8)*100-1);
-                LinkCommentApi.getMoreChildren(commentsToSend, linkId).then((children) => {
-                    commentCount += 100;
-                    for(let thing of children.json.data.things) {
-                        DesktopThreadServices.addComment(new ApiRedditComment(thing.data).toDesktopRedditComment());
-                    }
-                    if(allCommaDelimitedComments.substr((8)*commentCount,(8)*100-1) === "") {
-                        commentdiv.parentElement!.removeChild(commentdiv);
-                    } else {
-                        span.style.display = "inline";
-                        commentdiv.removeChild(loadingSpan);
-                        let parent = commentdiv.parentElement;
-                        parent!.removeChild(commentdiv);
-                        parent!.appendChild(commentdiv);
-                        let gray = <HTMLSpanElement>commentdiv.getElementsByClassName("gray")[0];
-                        let numberOfComments = +(gray.innerText.substring(gray.innerText.indexOf("(")+1,
-                            gray.innerText.indexOf(" ", gray.innerText.indexOf("("))));
-                        gray.innerText = " ("+(numberOfComments-100 < 0 ? 0 : numberOfComments - 100) + " replies)";
-                    }
-                });
-            });
+            hookMore(commentdivs[i]);
         }
     }
+}
+
+function hookMore(commentdiv: HTMLElement) {
+    let span = <HTMLSpanElement>(commentdiv.getElementsByClassName("morecomments")[0]);
+    let commentCount = 0;
+    span.firstChild!.addEventListener("click", () => {
+        let click = <string>(<HTMLAnchorElement>span.firstChild!).getAttribute("onclick");
+        let firstI = click.indexOf("'") + 1;
+        let secondI = click.indexOf("'", firstI);
+        let thirdI = click.indexOf("'", click.indexOf("'", click.indexOf("'", secondI + 1) + 1) + 1) + 1;
+        let fourthI = click.indexOf("'", thirdI);
+        let linkId = click.substring(firstI, secondI);
+        let allCommaDelimitedComments = click.substring(thirdI, fourthI);
+        let loadingSpan = document.createElement("span");
+        loadingSpan.innerText = "loading";
+        loadingSpan.style.color = "red";
+        span.style.display = "none";
+        commentdiv.appendChild(loadingSpan);
+        let commentsToSend = allCommaDelimitedComments.substr((8) * commentCount, (8) * 100 - 1);
+        LinkCommentApi.getMoreChildren(commentsToSend, linkId).then((children) => {
+            commentCount += 100;
+            for (let thing of children.json.data.things) {
+                DesktopThreadServices.addThingable(new ApiRedditComment(thing.data).toDesktopRedditComment());
+            }
+            if (allCommaDelimitedComments.substr((8) * commentCount, (8) * 100 - 1) === "") {
+                commentdiv.parentElement!.removeChild(commentdiv);
+            }
+            else {
+                span.style.display = "inline";
+                commentdiv.removeChild(loadingSpan);
+                let parent = commentdiv.parentElement;
+                parent!.removeChild(commentdiv);
+                parent!.appendChild(commentdiv);
+                let gray = <HTMLSpanElement>commentdiv.getElementsByClassName("gray")[0];
+                let numberOfComments = +(gray.innerText.substring(gray.innerText.indexOf("(") + 1, gray.innerText.indexOf(" ", gray.innerText.indexOf("("))));
+                gray.innerText = " (" + (numberOfComments - 100 < 0 ? 0 : numberOfComments - 100) + " replies)";
+            }
+        });
+    });
 }

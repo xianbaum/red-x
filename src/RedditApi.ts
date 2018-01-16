@@ -16,6 +16,7 @@ import { CommentModel } from "./redditapimodels/Comment";
 import { RawJson } from "./redditapimodels/RawJson";
 import { RedditMaster } from "./RedditMaster";
 import { DesktopEngine } from "./desktopengine/DesktopEngine";
+import { MoreModel } from "./redditapimodels/More";
 
 export namespace AccountApi {
     export const meBase = "/api/v1/me";    
@@ -190,9 +191,9 @@ export namespace LinkCommentApi {
         data.link_id = linkId;
         data.sort = "confidence";
         data.raw_json = 1;
-        return new Promise<JsonResponse<JsonData<ThingsArray<"t1", CommentModel>>>>((resolve, reject) => {
+        return new Promise<JsonResponse<JsonData<ThingsArray<"t1"|"more", CommentModel | MoreModel>>>>((resolve, reject) => {
             Http.get(Helpers.oauthBase+"/api/morechildren"+Http.createQueryString(data), [Helpers.authorizationHeader(), Helpers.userAgent()]).then(
-            (response: JsonResponse<JsonData<ThingsArray<"t1", CommentModel>>>) => {
+            (response: JsonResponse<JsonData<ThingsArray<"t1"|"more", CommentModel | MoreModel>>>) => {
                 if(!Helpers.exceptOnError(response, () => {
                     getMoreChildren(commaDelimitedChildren, linkId, id).then((response) =>{
                         resolve(response);

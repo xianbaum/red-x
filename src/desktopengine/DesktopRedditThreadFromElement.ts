@@ -54,5 +54,8 @@ export class DesktopRedditThreadFromElement implements RedditThread {
     set bodyHtml(value) {
         this._bodyHtml = value;
     }
+    get parentId() {
+        return null;
+    }
     public element: HTMLDivElement;
 }
