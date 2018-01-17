@@ -47,6 +47,7 @@ export class DesktopEngine  {
     constructor() {
         this.url = new Url(window.location.href);
         DesktopEngine.hookLogoutButton();
+        DesktopEngine.hookSubredditsDropDown();
         switch(this.pageType) {
             case PageType.Thread:
                 this.threadServices = new DesktopThreadServices();
@@ -154,5 +155,30 @@ export class DesktopEngine  {
                 logoutButton.submit();
             }
         } catch {}
+    }
+    static hookSubredditsDropDown() {
+        let dropdownButton = <HTMLDivElement>document.getElementsByClassName("dropdown")[0];
+        let dropdownmenu = <HTMLDivElement>document.getElementsByClassName("drop-choices")[0];
+        if(dropdownmenu == null && dropdownButton == null) {
+            return;
+        }
+        //add a tabindex so that I can do this with purely CSS
+        //(I don't want to rely on JS events)
+        dropdownButton.tabIndex=0;
+        dropdownmenu.style.visibility = "hidden";
+        dropdownmenu.style.display = "block";
+        let dropdowncss = document.createElement("style");
+        dropdowncss.type = "text/css";
+        dropdowncss.innerHTML = `
+        div.dropdown:focus + div.drop-choices {
+            visibility: visible !important;;
+        }
+        div.drop-choices {
+            top: 18px;
+            visibility: hidden;
+            transition: visibility 0.5s;
+        }
+        `
+        document.head.appendChild(dropdowncss);
     }
 }

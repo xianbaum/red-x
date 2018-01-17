@@ -834,6 +834,26 @@ adapted to be identical to a reddit comment
             });
         });
     }
+    export function hookSubredditsDropDown() {
+        let dropdowncss = document.createElement("style");
+        dropdowncss.type = "text/css";
+        dropdowncss.innerText = `
+        // .onclick-menu {
+        //     position: relative;
+        //     display: inline-block;
+        // }
+        // .onclick-menu:before {
+        //     content: "click me!";
+        // }
+        .dropdown .srdrop:focus + .drop-choices srdrop {
+            /* content is visible if menu is 'opened' */
+            display: block;
+        }
+        .drop-choices .srdrop {
+            transition: visibility 0.5s;
+        }
+        `
+    }
 }
 
 

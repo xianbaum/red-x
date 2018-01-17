@@ -58,7 +58,6 @@ export class RedditMaster {
                 } else if(ua.expirationUTC != null && ua.refreshToken != null && Date.now() + 60000 /*1 minute from now*/ > ua.expirationUTC) {
                     RedditApi.refreshAccessToken(ua.refreshToken).then((result) => {
                         ua.accessToken = result.access_token;
-                        ua.refreshToken = result.refresh_token;
                         ua.expirationUTC = Date.now() + (result.expires_in * 1000);
                         StorageManager.saveUserAccess(ua, <string>DesktopEngine.username);
                         resolve();
