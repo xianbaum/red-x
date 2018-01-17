@@ -74,7 +74,7 @@ export namespace LinkCommentApi {
             raw_json: 1
         };
         return new Promise<JsonResponse<JsonData<ThingsArray<"t1", CommentModel>>>>((resolve, reject) => {
-            Http.post(Helpers.oauthBase+"/api/comment",
+            Helpers.verifyAndPost(Helpers.oauthBase+"/api/comment",
             comment,
             [Helpers.authorizationHeader(), Helpers.userAgent(), Helpers.xWwwFormUrlEncodedContentType()],
             true).then((response: JsonResponse<JsonData<ThingsArray<"t1", CommentModel>>>) => {
@@ -95,7 +95,7 @@ export namespace LinkCommentApi {
             rank: 2
         }
         return new Promise((resolve, reject) => {
-            Http.post(Helpers.oauthBase+"/api/vote", data,
+            Helpers.verifyAndPost(Helpers.oauthBase+"/api/vote", data,
             [Helpers.authorizationHeader(), Helpers.userAgent(), Helpers.xWwwFormUrlEncodedContentType()],
             true).then((response: {} ) => {
                 if(!Helpers.exceptOnError(response, () => {
@@ -113,7 +113,7 @@ export namespace LinkCommentApi {
             id: fullname
         };
         return new Promise<{}>((resolve, reject) => {
-                Http.post(Helpers.oauthBase + "/api/del", data,
+                Helpers.verifyAndPost(Helpers.oauthBase + "/api/del", data,
                 [Helpers.authorizationHeader(), Helpers.userAgent(), Helpers.xWwwFormUrlEncodedContentType()],
                 true).then((response: {}) => {
                     if(!Helpers.exceptOnError(response, () => {
@@ -135,7 +135,7 @@ export namespace LinkCommentApi {
             raw_json: 1
         };
         return new Promise<JsonResponse<JsonData<ThingsArray<"t1", CommentModel>>>>((resolve, reject) => {
-            Http.post(Helpers.oauthBase+"/api/editusertext", data,
+            Helpers.verifyAndPost(Helpers.oauthBase+"/api/editusertext", data,
             [Helpers.authorizationHeader(), Helpers.userAgent(), Helpers.xWwwFormUrlEncodedContentType()],
             true).then((response: JsonResponse<JsonData<ThingsArray<"t1", CommentModel>>>) => {
                 if(!Helpers.exceptOnError(response, () => {
@@ -165,7 +165,7 @@ export namespace LinkCommentApi {
             data.url = linkOrText;
         }
         return new Promise<any>((resolve, reject) => {
-            Http.post(Helpers.oauthBase+"/api/submit", data,
+            Helpers.verifyAndPost(Helpers.oauthBase+"/api/submit", data,
             [Helpers.authorizationHeader(), Helpers.userAgent(), Helpers.xWwwFormUrlEncodedContentType()],
             true).then((response: any) => {
                 console.log(response);
@@ -192,7 +192,7 @@ export namespace LinkCommentApi {
         data.sort = "confidence";
         data.raw_json = 1;
         return new Promise<JsonResponse<JsonData<ThingsArray<"t1"|"more", CommentModel | MoreModel>>>>((resolve, reject) => {
-            Http.get(Helpers.oauthBase+"/api/morechildren"+Http.createQueryString(data), [Helpers.authorizationHeader(), Helpers.userAgent()]).then(
+            Helpers.verifyAndGet(Helpers.oauthBase+"/api/morechildren"+Http.createQueryString(data), [Helpers.authorizationHeader(), Helpers.userAgent()]).then(
             (response: JsonResponse<JsonData<ThingsArray<"t1"|"more", CommentModel | MoreModel>>>) => {
                 if(!Helpers.exceptOnError(response, () => {
                     getMoreChildren(commaDelimitedChildren, linkId, id).then((response) =>{
@@ -242,7 +242,7 @@ namespace Helpers {
         return new ResponseHeader("User-Agent", navigator.appVersion+":red-x:v0.1"+" (by /u/xianbaum)");
     }
     export function genericOauthGet(url: string): Promise<any> {
-        return Http.get(url, [Helpers.authorizationHeader(), Helpers.userAgent()])
+        return verifyAndGet(url, [Helpers.authorizationHeader(), Helpers.userAgent()])
             .then(Helpers.returnExceptOnError);
     }
     export function genericListing(url: string, list: Listing | undefined){
@@ -251,6 +251,32 @@ namespace Helpers {
     }
     export function xWwwFormUrlEncodedContentType() {
         return new ResponseHeader("Content-Type", "application/x-www-form-urlencoded");
+    }
+    export function verifyAndPost(url: string, data?: any, headers?: RequestHeader[], xWwwFormUrlencoded?: boolean) {
+        return new Promise<any>((resolve, reject) => {
+            RedditMaster.verifyCode().then(() => {
+                Http.post(url, data, headers, xWwwFormUrlencoded).then((response) => {
+                    resolve(response);
+                }, (reason) => {
+                    reject(reason)
+                });
+            }, (reason) => {
+                reject(reason)
+            });
+        })
+    }
+    export function verifyAndGet(url: string, headers?: RequestHeader[]) {
+        return new Promise<any>((resolve, reject) => {
+            RedditMaster.verifyCode().then(() => {
+                Http.get(url, headers).then((response) => {
+                    resolve(response);
+                }, (reason) => {
+                    reject(reason)
+                });
+            }, (reason) => {
+                reject(reason)
+            });
+        })
     }
 }
 

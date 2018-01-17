@@ -44,9 +44,6 @@ export class ApiRedditComment implements RedditComment {
         return this.adapter.edited !== false;
     }
     get parentId() {
-        return this.adapter.parent_id.replace("t1_","");
-    }
-    get parentFullname() {
         return this.adapter.parent_id;
     }
     get isDeleted() {

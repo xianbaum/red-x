@@ -4,6 +4,8 @@ import { RedditElements } from "./RedditElements";
 import { RedditThread } from "../interfaces/RedditThread";
 import { DesktopEngine } from "./DesktopEngine";
 import { DesktopRedditThreadFromElement } from "./DesktopRedditThreadFromElement";
+import { Thingable } from "../interfaces/Thingable";
+import { HasElement } from "../interfaces/HasElement";
 
 export class DesktopThreadServices {
     static processRedditThread() {
@@ -21,9 +23,9 @@ export class DesktopThreadServices {
             RedditElements.hookMoreComments();
         }
     }
-    public static addThingable(comment: DesktopRedditComment) {
-        if(this.comments[comment.id] === undefined) {
-            this.comments[comment.id] = comment;
+    public static addThingable(comment: Thingable & HasElement) {
+        if(this.comments[comment.fullname] === undefined) {
+            this.comments[comment.fullname] = comment;
         }
         if(comment.parentId === null || this.comments[comment.parentId] === undefined) {
             var comments = document.getElementsByClassName("sitetable nestedlisting")[0]
@@ -35,5 +37,5 @@ export class DesktopThreadServices {
         }
     }
     static thread: RedditThread;
-    static comments: {[id: string] : DesktopRedditComment } = {};
+    static comments: {[id: string] : Thingable & HasElement } = {};
 }

@@ -1,8 +1,9 @@
 import { RedditComment } from "./RedditComment";
 import { Votable } from "./Votable";
 import { Usertext } from "./Usertext";
+import { HasElement } from "./HasElement";
 
-export interface DesktopRedditComment extends RedditComment, Votable, Usertext{
+export interface DesktopRedditComment extends RedditComment, Votable, Usertext, HasElement{
     body: string;
     readonly author: string;
     readonly id: string;

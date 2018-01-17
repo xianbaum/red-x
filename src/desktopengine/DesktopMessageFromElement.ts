@@ -1,5 +1,6 @@
 import { RedditMessage } from "../interfaces/RedditMessage";
 import { RedditElements } from "./RedditElements";
+import { NotImplementedException } from "../helpers/NotImplementedException";
 
 export class DesktopMessageFromElement implements RedditMessage {
     public get id() {
@@ -38,6 +39,9 @@ export class DesktopMessageFromElement implements RedditMessage {
     }
     toggleReplyForm() {
         RedditElements.toggleCommentReplyForm(this.element, this.fullname);
+    }
+    get parentId(): string {
+        throw new NotImplementedException("parentId is not yet implemented in DesktopMessageFromElement")
     }
     constructor(element: HTMLDivElement) {
         

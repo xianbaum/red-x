@@ -39,14 +39,16 @@ export class RedditMaster {
                     let code = Url.Current.query("code");
                     if(code === undefined) {
                         if(window.location.href.indexOf(RedditApi.authorizePath) === -1) {
-                            RedditMaster.requestAccess();                        
+                            RedditMaster.requestAccess();
+                            resolve();                 
+                        } else {
+                            reject();
                         }
-                        reject();
                     } else {
                         RedditApi.getAccessToken(code).then((result) => {
                             ua.accessToken = result.access_token;
                             ua.refreshToken = result.refresh_token;
-                            ua.expirationUTC = Math.floor(Date.now()/1000) + result.expires_in;
+                            ua.expirationUTC = Date.now() + (result.expires_in * 1000);
                             StorageManager.saveUserAccess(ua, <string>DesktopEngine.username);
                             resolve();
                         }, (reason) => {
@@ -57,7 +59,7 @@ export class RedditMaster {
                     RedditApi.refreshAccessToken(ua.refreshToken).then((result) => {
                         ua.accessToken = result.access_token;
                         ua.refreshToken = result.refresh_token;
-                        ua.expirationUTC = Math.floor(Date.now()/1000) + result.expires_in;
+                        ua.expirationUTC = Date.now() + (result.expires_in * 1000);
                         StorageManager.saveUserAccess(ua, <string>DesktopEngine.username);
                         resolve();
                     }, (reason: any) => {
