@@ -5,7 +5,7 @@ import { DesktopMessagesServices } from "./DesktopMessagesServices";
 import {SubmitServices } from "./SubmitServices";
 import {SubredditServices} from "./SubredditServices";
 import {LoginServices} from "./LoginServices";
-
+import {FrontPageServices} from "./FrontPageServices";
 export enum PageType {
     Unknown,
     Front,
@@ -60,6 +60,8 @@ export class DesktopEngine  {
                 DesktopMessagesServices.processMessagesPage();
                 break;
             case PageType.Front:
+                FrontPageServices.init();
+                break;
             case PageType.Subreddit:
                 SubredditServices.init();
                 break;
@@ -84,13 +86,13 @@ export class DesktopEngine  {
             this.url.path.indexOf("/comments/") > -1;
     }
     private get pageIsFrontPage() {
-        return this.url.path == "/" || this.url.path == "";
+        return this.url.path == "/" || this.url.path == "" || this.url.path.indexOf("/r/popular") == 0 || this.url.path.indexOf("/r/all") == 0;
     }
     private get pageIsSubreddit() {
         return this.subredditName !== undefined &&
             !this.pageIsSearch && !this.pageIsSubmit && 
             !this.pageIsGilded && !this.pageIsWiki &&
-            !this.pageIsThread; 
+            !this.pageIsThread && !this.pageIsFrontPage; 
     }
     private get pageIsSubmit() {
         if(this.subredditName === undefined) {
