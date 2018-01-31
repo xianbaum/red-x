@@ -834,25 +834,25 @@ adapted to be identical to a reddit comment
             });
         });
     }
-    export function hookSubredditsDropDown() {
-        let dropdowncss = document.createElement("style");
-        dropdowncss.type = "text/css";
-        dropdowncss.innerText = `
-        // .onclick-menu {
-        //     position: relative;
-        //     display: inline-block;
-        // }
-        // .onclick-menu:before {
-        //     content: "click me!";
-        // }
-        .dropdown .srdrop:focus + .drop-choices srdrop {
-            /* content is visible if menu is 'opened' */
+    export function hookSearch() {
+        let expando = document.getElementById("searchexpando");
+        if(expando == null) {
+            return; // no reason to apply the rules if #searchexpando doesn't exist
+        }
+        let cssElement = document.createElement("style");
+        cssElement.innerHTML = `
+        input[name=q]:focus + input + #searchexpando, #searchexpando:hover {
+            opacity: 1;
+            height: 76px;
+          }
+          #searchexpando {
             display: block;
-        }
-        .drop-choices .srdrop {
-            transition: visibility 0.5s;
-        }
-        `
+            opacity: 0;
+            height: 0px;
+            transition: all 0.5s;
+          }
+        `;
+        document.head.appendChild(cssElement);
     }
 }
 

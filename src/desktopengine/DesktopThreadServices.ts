@@ -22,6 +22,7 @@ export class DesktopThreadServices {
             RedditElements.hookThreadCommentForm();
             RedditElements.hookMoreComments();
         }
+        RedditElements.hookSearch();
     }
     public static addThingable(comment: Thingable & HasElement) {
         if(this.comments[comment.fullname] === undefined) {

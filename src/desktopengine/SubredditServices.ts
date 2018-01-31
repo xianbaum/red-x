@@ -8,6 +8,7 @@ export class SubredditServices {
         this.threads = 
             RedditElements.generateListOf<DesktopRedditThreadFromElement>("comment",
                 DesktopRedditThreadFromElement);
+        RedditElements.hookSearch();
     }
     static threads: Dictionary<RedditThread>;
 }

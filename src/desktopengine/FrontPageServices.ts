@@ -9,6 +9,7 @@ export class FrontPageServices {
             RedditElements.generateListOf<DesktopRedditThreadFromElement>("comment",
                 DesktopRedditThreadFromElement);
         this.hookSidebar();
+        RedditElements.hookSearch();
     }
     static threads: Dictionary<RedditThread>;
     static hookSidebar() {
